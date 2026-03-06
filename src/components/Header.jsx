@@ -1,4 +1,5 @@
 import { theme, btnC } from "../utils.js";
+import logo from "../assets/logo.png";
 
 /**
  * Circuit control buttons (Q/S adjusters, Clear, Run)
@@ -106,7 +107,7 @@ export function Header({ nq, ns, addQ, rmQ, addS, rmS, clear, run, isMobile }) {
     >
       <div style={{ display: "flex", alignItems: "center", gap: 8, minWidth: 0 }}>
         <img
-          src="/src/assets/logo.png"
+          src={logo}
           alt="Q"
           style={{
             width: 84,
