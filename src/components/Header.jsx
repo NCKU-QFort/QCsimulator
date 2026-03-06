@@ -105,16 +105,19 @@ export function Header({ nq, ns, addQ, rmQ, addS, rmS, clear, run, isMobile }) {
       }}
     >
       <div style={{ display: "flex", alignItems: "center", gap: 8, minWidth: 0 }}>
-        <img
-          src={`${import.meta.env.BASE_URL}logo.png`}
-          alt="Q"
-          style={{
-            height: 30,
-            width: "auto",
-            borderRadius: 8,
-            flexShrink: 0,
-          }}
-        />
+        <a href="https://qfort.ncku.edu.tw/" target="_blank">
+          <img
+            src={`${import.meta.env.BASE_URL}logo.png`}
+            alt="QFort Logo"
+            style={{
+              height: 30,
+              width: "auto",
+              borderRadius: 8,
+              flexShrink: 0,
+              cursor: "pointer",
+            }}
+          />
+        </a>
         <div style={{ minWidth: 0 }}>
           <div
             style={{
