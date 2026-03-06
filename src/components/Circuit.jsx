@@ -28,17 +28,12 @@ function GateRenderer({ gate, isMobile }) {
     return (
       <div
         style={{
-          width: 22,
-          height: 22,
-          borderRadius: "50%",
-          border: `2.5px solid ${GATE_DEFS.CNOT.color}`,
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
           color: GATE_DEFS.CNOT.color,
-          fontSize: 15,
+          fontSize: 24,
           fontWeight: "bold",
-          background: theme.surface,
         }}
       >
         {"⊕"}
@@ -189,6 +184,49 @@ function GateCell({ q, s, circ, selGate, pending, hovered, handleClick, setHover
           </div>
         )}
 
+      {/* Preview for multi-qubit gate control/first qubit */}
+      {!hasGate &&
+        isHovered &&
+        selGate &&
+        !pending &&
+        GATE_DEFS[selGate] &&
+        GATE_DEFS[selGate].qubits === 2 && (() => {
+          const gateColor = GATE_DEFS[selGate].color;
+          
+          if (selGate === "CNOT") {
+            return (
+              <div
+                style={{
+                  width: 14,
+                  height: 14,
+                  borderRadius: "50%",
+                  border: `2px dashed ${gateColor}80`,
+                  background: `${gateColor}40`,
+                }}
+              />
+            );
+          } else if (selGate === "CZ") {
+            return (
+              <div
+                style={{
+                  width: 14,
+                  height: 14,
+                  borderRadius: "50%",
+                  border: `2px dashed ${gateColor}80`,
+                  background: `${gateColor}40`,
+                }}
+              />
+            );
+          } else if (selGate === "SWAP") {
+            return (
+              <div style={{ fontSize: 16, color: `${gateColor}80`, fontWeight: "bold" }}>
+                {"✕"}
+              </div>
+            );
+          }
+          return null;
+        })()}
+
       {/* Preview for measurement */}
       {!hasGate && isHovered && selGate === "M" && !pending && (
         <div
@@ -208,6 +246,47 @@ function GateCell({ q, s, circ, selGate, pending, hovered, handleClick, setHover
           M
         </div>
       )}
+
+      {/* Preview for multi-qubit gate target */}
+      {!hasGate && isPendingTarget && isHovered && pending && GATE_DEFS[pending.gate] && (() => {
+        const gateType = pending.gate;
+        const gateColor = GATE_DEFS[gateType].color;
+        
+        if (gateType === "CNOT") {
+          return (
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                color: `${gateColor}80`,
+                fontSize: 24,
+                fontWeight: "bold",
+              }}
+            >
+              {"⊕"}
+            </div>
+          );
+        } else if (gateType === "CZ") {
+          return (
+            <div
+              style={{
+                width: 14,
+                height: 14,
+                borderRadius: "50%",
+                border: `2px dashed ${gateColor}80`,
+              }}
+            />
+          );
+        } else if (gateType === "SWAP") {
+          return (
+            <div style={{ fontSize: 16, color: `${gateColor}80`, fontWeight: "bold" }}>
+              {"✕"}
+            </div>
+          );
+        }
+        return null;
+      })()}
     </div>
   );
 }
@@ -234,7 +313,7 @@ function QubitWire({ q, ns, circ, selGate, pending, hovered, handleClick, setHov
         <span style={{ color: theme.textLight }}>|0⟩</span>
       </div>
 
-      <div style={{ display: "flex", position: "relative" }}>
+      <div style={{ display: "flex", position: "relative", marginLeft: 5 }}>
         {/* Horizontal wire line */}
         <div
           style={{
