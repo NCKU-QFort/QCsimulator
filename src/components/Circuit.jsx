@@ -1,3 +1,4 @@
+import React from "react";
 import { theme } from "../utils.js";
 import { GATE_DEFS } from "../gateDefinitions.js";
 
@@ -309,8 +310,7 @@ function QubitWire({ q, ns, circ, selGate, pending, hovered, handleClick, setHov
           flexShrink: 0,
         }}
       >
-        q<sub style={{ fontSize: isMobile ? 8 : 10 }}>{q}</sub>{" "}
-        <span style={{ color: theme.textLight }}>|0⟩</span>
+        q<sub style={{ fontSize: isMobile ? 8 : 10 }}>{q}</sub>
       </div>
 
       <div style={{ display: "flex", position: "relative", marginLeft: 5 }}>
@@ -351,6 +351,184 @@ function QubitWire({ q, ns, circ, selGate, pending, hovered, handleClick, setHov
 }
 
 /**
+ * A single classical bit wire (row) in the circuit
+ */
+function ClassicalBitWire({ nc, nq, ns, circ, cbits, isMobile, CH, CW, LBL_W }) {
+  return (
+    <div style={{ display: "flex", alignItems: "center", height: CH }}>
+      <div
+        style={{
+          width: LBL_W,
+          textAlign: "right",
+          paddingRight: 6,
+          fontFamily: "'Source Code Pro',monospace",
+          fontSize: isMobile ? 11 : 13,
+          color: theme.textMid,
+          fontWeight: 600,
+          flexShrink: 0,
+        }}
+      >
+        c<sub style={{ fontSize: isMobile ? 8 : 10 }}>{nc}</sub>
+      </div>
+
+      <div style={{ display: "flex", position: "relative", marginLeft: 5, width: ns * CW }}>
+        {/* Double horizontal lines for classical bit */}
+        <div
+          style={{
+            position: "absolute",
+            top: "50%",
+            left: 0,
+            right: 0,
+            height: 3,
+            borderTop: `1.5px solid ${theme.wire}`,
+            borderBottom: `1.5px solid ${theme.wire}`,
+            zIndex: 0,
+            opacity: 0.5,
+          }}
+        />
+
+        {/* Show cbit assignments and measured values */}
+        {Array.from({ length: ns }, (_, s) => {
+          // Find if there's a measurement at this step
+          let measurementCbit = null;
+          for (let q = 0; q < nq; q++) {
+            const g = circ[`${q}-${s}`];
+            if (g && g.type === "M" && g.cbit !== undefined) {
+              measurementCbit = g.cbit;
+              break;
+            }
+          }
+
+          const hasValue = cbits && measurementCbit !== null && cbits[measurementCbit] !== null;
+
+          return (
+            <div
+              key={s}
+              style={{
+                width: CW,
+                height: CH,
+                zIndex: 1,
+                position: "relative",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              {/* Show cbit assignment and measured value */}
+              {measurementCbit !== null && (
+                <div
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                    fontSize: isMobile ? 9 : 10,
+                    fontFamily: "'Source Code Pro', monospace",
+                    pointerEvents: "none",
+                  }}
+                >
+                  <div style={{ color: theme.accent, fontWeight: 600 }}>
+                    c<sub style={{ fontSize: isMobile ? 7 : 8 }}>{measurementCbit}</sub>
+                  </div>
+                  {hasValue && (
+                    <div
+                      style={{
+                        color: theme.text,
+                        fontWeight: 700,
+                        fontSize: isMobile ? 11 : 13,
+                        marginTop: 2,
+                      }}
+                    >
+                      {cbits[measurementCbit]}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+/**
+ * Selector for choosing which classical bit to store measurement result
+ */
+function CbitSelector({ nc, nq, pending, handleCbitClick, isMobile, CH, CW, LBL_W }) {
+  if (!pending || pending.gate !== "M") return null;
+
+  const left = LBL_W + 5 + pending.step * CW;
+  const top = pending.qubit * CH + CH + 10;
+  const grayColor = "#888";
+
+  return (
+    <div
+      style={{
+        position: "absolute",
+        left,
+        top,
+        background: theme.surface,
+        border: `2px solid ${grayColor}`,
+        borderRadius: 8,
+        padding: isMobile ? "8px 10px" : "10px 12px",
+        boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
+        zIndex: 100,
+        minWidth: isMobile ? 140 : 160,
+      }}
+    >
+      <div
+        style={{
+          fontSize: isMobile ? 10 : 11,
+          fontWeight: 600,
+          color: theme.text,
+          marginBottom: 8,
+          textAlign: "center",
+        }}
+      >
+        Select Classical Bit
+      </div>
+      <div
+        style={{
+          display: "flex",
+          flexWrap: "wrap",
+          gap: 6,
+          justifyContent: "center",
+        }}
+      >
+        {Array.from({ length: nc }, (_, i) => (
+          <button
+            key={i}
+            onClick={() => handleCbitClick(i)}
+            style={{
+              padding: isMobile ? "4px 10px" : "6px 12px",
+              background: theme.bg,
+              border: `1.5px solid ${grayColor}`,
+              borderRadius: 5,
+              color: theme.textMid,
+              cursor: "pointer",
+              fontSize: isMobile ? 11 : 12,
+              fontWeight: 600,
+              fontFamily: "'Source Code Pro', monospace",
+              transition: "all 0.1s",
+            }}
+            onMouseEnter={(e) => {
+              e.target.style.background = "#f0f0f0";
+              e.target.style.transform = "scale(1.05)";
+            }}
+            onMouseLeave={(e) => {
+              e.target.style.background = theme.bg;
+              e.target.style.transform = "scale(1)";
+            }}
+          >
+            c<sub>{i}</sub>
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/**
  * Get all connections (control lines) for a given step
  */
 function getConnections(circ, nq, step) {
@@ -376,9 +554,26 @@ function getConnections(circ, nq, step) {
 }
 
 /**
+ * Get all measurement connections (from qubit to classical bit) for a given step
+ */
+function getMeasurementConnections(circ, nq, step) {
+  const measurements = [];
+
+  for (let q = 0; q < nq; q++) {
+    const g = circ[`${q}-${step}`];
+
+    if (g && g.type === "M" && g.cbit !== undefined) {
+      measurements.push({ qubit: q, cbit: g.cbit, color: "#888" });
+    }
+  }
+
+  return measurements;
+}
+
+/**
  * Renders vertical connection lines between qubits
  */
-function ConnectionLines({ circ, nq, ns, pending, hovered, CH, CW, LBL_W }) {
+function ConnectionLines({ circ, nq, nc, ns, pending, hovered, CH, CW, LBL_W }) {
   return (
     <>
       {/* Static connections from circuit */}
@@ -408,10 +603,100 @@ function ConnectionLines({ circ, nq, ns, pending, hovered, CH, CW, LBL_W }) {
         });
       })}
 
+      {/* Measurement connections from qubits to classical bits */}
+      {Array.from({ length: ns }, (_, s) => {
+        const measurements = getMeasurementConnections(circ, nq, s);
+
+        return measurements.map((m, mi) => {
+          // Connection goes from qubit to classical bit wire
+          const top = m.qubit * CH + CH / 2;
+          // Classical bit wire is positioned after all qubits
+          const bottom = nq * CH + CH / 2;
+          const centerX = LBL_W + 5 + s * CW + CW / 2;
+
+          return (
+            <React.Fragment key={`m-${s}-${mi}`}>
+              {/* Dashed line */}
+              <div
+                style={{
+                  position: "absolute",
+                  left: centerX - 1,
+                  top,
+                  width: 2.5,
+                  height: bottom - top,
+                  background: "transparent",
+                  borderLeft: `2.5px dashed ${m.color}`,
+                  zIndex: 2,
+                  pointerEvents: "none",
+                }}
+              />
+              {/* Circle at intersection with classical wire */}
+              <div
+                style={{
+                  position: "absolute",
+                  left: centerX - 4,
+                  top: bottom - 4,
+                  width: 8,
+                  height: 8,
+                  borderRadius: "50%",
+                  background: m.color,
+                  border: `1.5px solid ${theme.bg}`,
+                  zIndex: 3,
+                  pointerEvents: "none",
+                }}
+              />
+            </React.Fragment>
+          );
+        });
+      })}
+
+      {/* Pending measurement connection (dashed) */}
+      {pending && pending.gate === "M" && (() => {
+        const top = pending.qubit * CH + CH / 2;
+        const bottom = nq * CH + CH / 2;
+        const centerX = LBL_W + 5 + pending.step * CW + CW / 2;
+        const grayColor = "#888";
+
+        return (
+          <>
+            {/* Dashed line */}
+            <div
+              style={{
+                position: "absolute",
+                left: centerX - 1,
+                top,
+                width: 2.5,
+                height: bottom - top,
+                background: "transparent",
+                borderLeft: `2.5px dashed ${grayColor}`,
+                zIndex: 2,
+                pointerEvents: "none",
+              }}
+            />
+            {/* Circle at intersection with classical wire */}
+            <div
+              style={{
+                position: "absolute",
+                left: centerX - 4,
+                top: bottom - 4,
+                width: 8,
+                height: 8,
+                borderRadius: "50%",
+                background: grayColor,
+                border: `1.5px solid ${theme.bg}`,
+                zIndex: 3,
+                pointerEvents: "none",
+              }}
+            />
+          </>
+        );
+      })()}
+
       {/* Preview connection for pending multi-qubit gate */}
       {pending &&
         hovered &&
         hovered.s === pending.step &&
+        typeof hovered.q === "number" &&
         hovered.q !== pending.qubit &&
         (() => {
           const top = Math.min(pending.qubit, hovered.q) * CH + CH / 2;
@@ -441,7 +726,7 @@ function ConnectionLines({ circ, nq, ns, pending, hovered, CH, CW, LBL_W }) {
 /**
  * Main circuit grid component
  */
-export function CircuitGrid({ nq, ns, circ, selGate, pending, hovered, handleClick, setHovered, isMobile }) {
+export function CircuitGrid({ nq, nc, ns, circ, cbits, selGate, pending, hovered, handleClick, handleCbitClick, setHovered, isMobile }) {
   const CH = isMobile ? 48 : 58;
   const CW = isMobile ? 48 : 58;
   const LBL_W = isMobile ? 50 : 63;
@@ -496,10 +781,39 @@ export function CircuitGrid({ nq, ns, circ, selGate, pending, hovered, handleCli
             />
           ))}
 
+          {/* Separator between quantum and classical wires */}
+          <div style={{ height: isMobile ? 12 : 16 }} />
+
+          {/* Classical bit wire */}
+          <ClassicalBitWire
+            nc={nc}
+            nq={nq}
+            ns={ns}
+            circ={circ}
+            cbits={cbits}
+            isMobile={isMobile}
+            CH={CH}
+            CW={CW}
+            LBL_W={LBL_W}
+          />
+
+          {/* Classical bit selector for pending measurement */}
+          <CbitSelector
+            nc={nc}
+            nq={nq}
+            pending={pending}
+            handleCbitClick={handleCbitClick}
+            isMobile={isMobile}
+            CH={CH}
+            CW={CW}
+            LBL_W={LBL_W}
+          />
+
           {/* Connection lines */}
           <ConnectionLines
             circ={circ}
             nq={nq}
+            nc={nc}
             ns={ns}
             pending={pending}
             hovered={hovered}

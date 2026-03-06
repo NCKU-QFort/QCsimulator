@@ -12,6 +12,7 @@ import { ResultsPanel } from "./components/Results.jsx";
 export default function App() {
   const isMobile = useIsMobile();
   const [showPalette, setShowPalette] = useState(false);
+  const [nc, setNc] = useState(2); // Number of classical bits
 
   const circuitState = useCircuitState();
   const {
@@ -28,11 +29,15 @@ export default function App() {
     clear: clearCircuit,
     selectGate,
     handleClick,
+    handleCbitClick,
     setHovered,
   } = circuitState;
 
-  const simulation = useSimulation(nq, circ, ns);
-  const { results, sv, showSv, chartData, run, clear: clearResults, setShowSv } = simulation;
+  const simulation = useSimulation(nq, nc, circ, ns);
+  const { results, sv, cbits, showSv, chartData, run, clear: clearResults, setShowSv } = simulation;
+
+  const addC = () => setNc((n) => Math.min(n + 1, 10));
+  const rmC = () => setNc((n) => Math.max(n - 1, 1));
 
   const clear = () => {
     clearCircuit();
@@ -63,9 +68,12 @@ export default function App() {
       {/* Header */}
       <Header
         nq={nq}
+        nc={nc}
         ns={ns}
         addQ={addQ}
         rmQ={rmQ}
+        addC={addC}
+        rmC={rmC}
         addS={addS}
         rmS={rmS}
         clear={clear}
@@ -199,12 +207,15 @@ export default function App() {
           {/* Circuit Grid */}
           <CircuitGrid
             nq={nq}
+            nc={nc}
             ns={ns}
             circ={circ}
+            cbits={cbits}
             selGate={selGate}
             pending={pending}
             hovered={hovered}
             handleClick={handleClick}
+            handleCbitClick={handleCbitClick}
             setHovered={setHovered}
             isMobile={isMobile}
           />
@@ -223,10 +234,12 @@ export default function App() {
             <ResultsPanel
               results={results}
               sv={sv}
+              cbits={cbits}
               showSv={showSv}
               setShowSv={setShowSv}
               chartData={chartData}
               nq={nq}
+              nc={nc}
               isMobile={isMobile}
             />
           </div>

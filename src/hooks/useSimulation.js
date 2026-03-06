@@ -5,24 +5,28 @@ import { runSim } from "../quantumSimulation.js";
 /**
  * Hook for managing quantum circuit simulation
  * @param {number} nq - Number of qubits
+ * @param {number} nc - Number of classical bits
  * @param {Object} circ - Circuit configuration
  * @param {number} ns - Number of steps
  * @returns {Object} Simulation state and control functions
  */
-export function useSimulation(nq, circ, ns) {
+export function useSimulation(nq, nc, circ, ns) {
   const [results, setResults] = useState(null);
   const [sv, setSv] = useState(null);
+  const [cbits, setCbits] = useState(null);
   const [showSv, setShowSv] = useState(false);
 
   const run = () => {
-    const st = runSim(nq, circ, ns);
-    setResults(st.map((a) => cAbs2(a)));
-    setSv(st);
+    const { state, cbits: measuredCbits } = runSim(nq, nc, circ, ns);
+    setResults(state.map((a) => cAbs2(a)));
+    setSv(state);
+    setCbits(measuredCbits);
   };
 
   const clear = () => {
     setResults(null);
     setSv(null);
+    setCbits(null);
   };
 
   const chartData = useMemo(() => {
@@ -40,6 +44,7 @@ export function useSimulation(nq, circ, ns) {
     // State
     results,
     sv,
+    cbits,
     showSv,
     chartData,
     // Actions

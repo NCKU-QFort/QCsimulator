@@ -3,7 +3,7 @@ import { theme, btnC } from "../utils.js";
 /**
  * Circuit control buttons (Q/S adjusters, Clear, Run)
  */
-function CircuitControls({ nq, ns, addQ, rmQ, addS, rmS, clear, run }) {
+function CircuitControls({ nq, nc, ns, addQ, rmQ, addC, rmC, addS, rmS, clear, run }) {
   return (
     <div style={{ display: "flex", gap: 4, alignItems: "center", flexWrap: "wrap" }}>
       {/* Qubit count control */}
@@ -24,6 +24,26 @@ function CircuitControls({ nq, ns, addQ, rmQ, addS, rmS, clear, run }) {
           {nq}
         </span>
         <button onClick={addQ} style={btnC}>+</button>
+      </div>
+
+      {/* Classical bit count control */}
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: 3,
+          padding: "3px 8px",
+          background: theme.bg,
+          borderRadius: 6,
+          border: `1px solid ${theme.borderLight}`,
+        }}
+      >
+        <span style={{ fontSize: 11, color: theme.textLight, fontWeight: 500 }}>Cbits</span>
+        <button onClick={rmC} style={btnC}>−</button>
+        <span style={{ fontSize: 12, fontWeight: 600, color: theme.text, minWidth: 14, textAlign: "center" }}>
+          {nc}
+        </span>
+        <button onClick={addC} style={btnC}>+</button>
       </div>
 
       {/* Step count control */}
@@ -89,7 +109,7 @@ function CircuitControls({ nq, ns, addQ, rmQ, addS, rmS, clear, run }) {
 /**
  * Application header component
  */
-export function Header({ nq, ns, addQ, rmQ, addS, rmS, clear, run, isMobile }) {
+export function Header({ nq, nc, ns, addQ, rmQ, addC, rmC, addS, rmS, clear, run, isMobile }) {
   return (
     <div
       style={{
@@ -141,9 +161,12 @@ export function Header({ nq, ns, addQ, rmQ, addS, rmS, clear, run, isMobile }) {
 
       <CircuitControls
         nq={nq}
+        nc={nc}
         ns={ns}
         addQ={addQ}
         rmQ={rmQ}
+        addC={addC}
+        rmC={rmC}
         addS={addS}
         rmS={rmS}
         clear={clear}

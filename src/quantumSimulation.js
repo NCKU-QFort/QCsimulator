@@ -1,4 +1,4 @@
-import { cAdd, cMul } from "./utils.js";
+import { cAdd, cMul, cAbs2 } from "./utils.js";
 import { GATE_DEFS } from "./gateDefinitions.js";
 
 /**
@@ -98,15 +98,63 @@ export function applySWAP(st, q1, q2, n) {
 }
 
 /**
+ * Perform measurement on a qubit
+ * @param {Array} st - State vector
+ * @param {number} q - Qubit to measure
+ * @param {number} n - Total number of qubits
+ * @returns {Object} { state: new collapsed state, result: 0 or 1 }
+ */
+export function measureQubit(st, q, n) {
+  const d = 1 << n;
+  
+  // Calculate probability of measuring 0
+  let prob0 = 0;
+  for (let i = 0; i < d; i++) {
+    const bit = (i >> q) & 1;
+    if (bit === 0) {
+      prob0 += cAbs2(st[i]);
+    }
+  }
+
+  // Random measurement based on probability
+  const result = Math.random() < prob0 ? 0 : 1;
+
+  // Collapse state vector
+  const ns = st.map(() => [0, 0]);
+  let norm = 0;
+
+  for (let i = 0; i < d; i++) {
+    const bit = (i >> q) & 1;
+    if (bit === result) {
+      ns[i] = [...st[i]];
+      norm += cAbs2(st[i]);
+    }
+  }
+
+  // Normalize the collapsed state
+  const normFactor = Math.sqrt(norm);
+  if (normFactor > 1e-10) {
+    for (let i = 0; i < d; i++) {
+      ns[i][0] /= normFactor;
+      ns[i][1] /= normFactor;
+    }
+  }
+
+  return { state: ns, result };
+}
+
+/**
  * Run the quantum circuit simulation
  * @param {number} nq - Number of qubits
+ * @param {number} nc - Number of classical bits
  * @param {Object} circ - Circuit configuration
  * @param {number} ns - Number of steps
- * @returns {Array} Final state vector
+ * @returns {Object} { state: final state vector, cbits: classical bit values }
  */
-export function runSim(nq, circ, ns) {
+export function runSim(nq, nc, circ, ns) {
   const d = 1 << nq;
   let st = Array.from({ length: d }, (_, i) => (i === 0 ? [1, 0] : [0, 0]));
+  const cbits = Array(nc).fill(null); // Classical bits start as null (unmeasured)
 
   for (let s = 0; s < ns; s++) {
     const pr = new Set();
@@ -118,7 +166,12 @@ export function runSim(nq, circ, ns) {
       const g = circ[k];
       if (!g) continue;
 
-      if (g.type === "CNOT_CTRL") {
+      if (g.type === "M" && g.cbit !== undefined) {
+        // Perform measurement
+        const measurement = measureQubit(st, q, nq);
+        st = measurement.state;
+        cbits[g.cbit] = measurement.result;
+      } else if (g.type === "CNOT_CTRL") {
         st = applyCNOT(st, q, g.target, nq);
         pr.add(`${g.target}-${s}`);
       } else if (g.type === "CZ_CTRL") {
@@ -127,7 +180,7 @@ export function runSim(nq, circ, ns) {
       } else if (g.type === "SWAP_A") {
         st = applySWAP(st, q, g.partner, nq);
         pr.add(`${g.partner}-${s}`);
-      } else if (["M", "CNOT_TGT", "CZ_TGT", "SWAP_B"].includes(g.type)) {
+      } else if (["CNOT_TGT", "CZ_TGT", "SWAP_B"].includes(g.type)) {
         continue;
       } else if (GATE_DEFS[g.type]) {
         st = applySingleGate(st, GATE_DEFS[g.type].matrix, q, nq);
@@ -137,5 +190,5 @@ export function runSim(nq, circ, ns) {
     }
   }
 
-  return st;
+  return { state: st, cbits };
 }

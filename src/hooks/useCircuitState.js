@@ -93,7 +93,8 @@ export function useCircuitState() {
       const k = `${q}-${s}`;
       if (circ[k]) return;
 
-      setCirc({ ...circ, [k]: { type: "M" } });
+      // Set pending state for measurement, waiting for cbit selection
+      setPending({ gate: "M", qubit: q, step: s });
       return;
     }
 
@@ -142,6 +143,17 @@ export function useCircuitState() {
     setCirc({ ...circ, [k]: { type: selGate } });
   };
 
+  const handleCbitClick = (cbit) => {
+    // Only handle if there's a pending measurement
+    if (!pending || pending.gate !== "M") {
+      return;
+    }
+
+    const k = `${pending.qubit}-${pending.step}`;
+    setCirc({ ...circ, [k]: { type: "M", cbit } });
+    setPending(null);
+  };
+
   return {
     // State
     nq,
@@ -158,6 +170,7 @@ export function useCircuitState() {
     clear,
     selectGate,
     handleClick,
+    handleCbitClick,
     setHovered,
   };
 }

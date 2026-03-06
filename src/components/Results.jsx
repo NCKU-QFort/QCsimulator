@@ -106,7 +106,7 @@ function StateVector({ sv, nq, isMobile }) {
 /**
  * Results panel component showing probabilities and state vector
  */
-export function ResultsPanel({ results, sv, showSv, setShowSv, chartData, nq, isMobile }) {
+export function ResultsPanel({ results, sv, cbits, showSv, setShowSv, chartData, nq, nc, isMobile }) {
   if (!results) {
     return (
       <div style={{ fontSize: isMobile ? 12 : 13, color: theme.textLight, textAlign: "center", padding: 6 }}>
@@ -115,8 +115,60 @@ export function ResultsPanel({ results, sv, showSv, setShowSv, chartData, nq, is
     );
   }
 
+  // Check if any measurements were performed
+  const hasMeasurements = cbits && cbits.some((c) => c !== null);
+
   return (
     <div>
+      {/* Classical Bits Display */}
+      {hasMeasurements && (
+        <div
+          style={{
+            marginBottom: 12,
+            padding: isMobile ? "8px 10px" : "10px 12px",
+            background: theme.surface,
+            border: `1px solid ${theme.border}`,
+            borderRadius: 6,
+          }}
+        >
+          <div
+            style={{
+              fontSize: isMobile ? 11 : 12,
+              fontWeight: 600,
+              color: theme.text,
+              marginBottom: 8,
+            }}
+          >
+            Classical Bits <span style={{ color: theme.textLight, fontWeight: 400, fontSize: 10 }}>— 古典位元值</span>
+          </div>
+          <div
+            style={{
+              display: "flex",
+              flexWrap: "wrap",
+              gap: isMobile ? 6 : 8,
+              fontFamily: "'Source Code Pro', monospace",
+              fontSize: isMobile ? 11 : 12,
+            }}
+          >
+            {cbits.map((val, i) => (
+              <div
+                key={i}
+                style={{
+                  padding: "4px 10px",
+                  background: val !== null ? theme.accentBg : theme.bg,
+                  border: `1px solid ${val !== null ? theme.accent : theme.border}`,
+                  borderRadius: 4,
+                  color: val !== null ? theme.accent : theme.textLight,
+                  fontWeight: val !== null ? 600 : 400,
+                }}
+              >
+                c<sub>{i}</sub> = {val !== null ? val : "—"}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       <div
         style={{
           display: "flex",
