@@ -1,0 +1,237 @@
+import { useState } from "react";
+import { theme } from "./utils.js";
+import { GATE_DEFS } from "./gateDefinitions.js";
+import { useIsMobile } from "./hooks/useIsMobile.js";
+import { useCircuitState } from "./hooks/useCircuitState.js";
+import { useSimulation } from "./hooks/useSimulation.js";
+import { Header } from "./components/Header.jsx";
+import { GatePalette } from "./components/GatePalette.jsx";
+import { CircuitGrid } from "./components/Circuit.jsx";
+import { ResultsPanel } from "./components/Results.jsx";
+
+export default function App() {
+  const isMobile = useIsMobile();
+  const [showPalette, setShowPalette] = useState(false);
+
+  const circuitState = useCircuitState();
+  const {
+    nq,
+    ns,
+    circ,
+    selGate,
+    pending,
+    hovered,
+    addQ,
+    rmQ,
+    addS,
+    rmS,
+    clear: clearCircuit,
+    selectGate,
+    handleClick,
+    setHovered,
+  } = circuitState;
+
+  const simulation = useSimulation(nq, circ, ns);
+  const { results, sv, showSv, chartData, run, clear: clearResults, setShowSv } = simulation;
+
+  const clear = () => {
+    clearCircuit();
+    clearResults();
+  };
+
+  return (
+    <div
+      style={{
+        minHeight: "100vh",
+        background: theme.bg,
+        color: theme.text,
+        fontFamily: "'DM Sans','Segoe UI',sans-serif",
+        display: "flex",
+        flexDirection: "column",
+        overflow: "hidden",
+      }}
+    >
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=Source+Code+Pro:wght@400;500;600;700&display=swap');
+        *{box-sizing:border-box;margin:0;padding:0;}
+        ::-webkit-scrollbar{width:5px;height:5px;}
+        ::-webkit-scrollbar-track{background:${theme.bg};}
+        ::-webkit-scrollbar-thumb{background:${theme.border};border-radius:3px;}
+        button:active{transform:scale(0.97);}
+      `}</style>
+
+      {/* Header */}
+      <Header
+        nq={nq}
+        ns={ns}
+        addQ={addQ}
+        rmQ={rmQ}
+        addS={addS}
+        rmS={rmS}
+        clear={clear}
+        run={run}
+        isMobile={isMobile}
+      />
+
+      {/* Mobile: Gate Toggle Bar */}
+      {isMobile && (
+        <div style={{ borderBottom: `1px solid ${theme.border}`, background: theme.sidebar, flexShrink: 0 }}>
+          <button
+            onClick={() => setShowPalette(!showPalette)}
+            style={{
+              width: "100%",
+              padding: "8px 12px",
+              background: "transparent",
+              border: "none",
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              fontFamily: "inherit",
+              fontSize: 13,
+              color: theme.text,
+              fontWeight: 500,
+            }}
+          >
+            <span>
+              {selGate ? (
+                <>
+                  <span
+                    style={{
+                      display: "inline-flex",
+                      width: 22,
+                      height: 22,
+                      borderRadius: 4,
+                      alignItems: "center",
+                      justifyContent: "center",
+                      fontWeight: 700,
+                      fontSize: 12,
+                      fontFamily: "'Source Code Pro',monospace",
+                      background:
+                        selGate === "M"
+                          ? "#F1F5F9"
+                          : GATE_DEFS[selGate]?.bg || "#F1F5F9",
+                      color:
+                        selGate === "M"
+                          ? theme.textMid
+                          : GATE_DEFS[selGate]?.color || theme.textMid,
+                      marginRight: 6,
+                      border: `1.5px solid ${
+                        selGate === "M"
+                          ? theme.border
+                          : (GATE_DEFS[selGate]?.color || theme.border)
+                      }40`,
+                      verticalAlign: "middle",
+                    }}
+                  >
+                    {selGate === "M" ? "M" : GATE_DEFS[selGate]?.label || selGate}
+                  </span>
+                  {selGate === "M"
+                    ? "Measurement"
+                    : GATE_DEFS[selGate]?.desc || selGate}{" "}
+                  selected
+                </>
+              ) : (
+                "Select a Gate 選擇量子邏輯閘"
+              )}
+            </span>
+
+            <span style={{ fontSize: 10, color: theme.textLight }}>
+              {showPalette ? "▲" : "▼"}
+            </span>
+          </button>
+
+          {showPalette && (
+            <div style={{ padding: "8px 12px 12px", maxHeight: 200, overflowY: "auto" }}>
+              <GatePalette
+                selGate={selGate}
+                selectGate={selectGate}
+                pending={pending}
+                isMobile={isMobile}
+                showInstructions={false}
+              />
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Mobile: Pending hint */}
+      {isMobile && pending && (
+        <div
+          style={{
+            padding: "6px 12px",
+            background: "#FEF3C7",
+            borderBottom: "1px solid #F59E0B",
+            fontSize: 12,
+            color: "#92400E",
+            textAlign: "center",
+          }}
+        >
+          請點擊同一 Step 的另一個 Qubit
+        </div>
+      )}
+
+      <div style={{ display: "flex", flex: 1, overflow: "hidden" }}>
+        {/* Desktop Sidebar */}
+        {!isMobile && (
+          <div
+            style={{
+              width: 180,
+              borderRight: `1px solid ${theme.border}`,
+              padding: "16px 12px",
+              background: theme.sidebar,
+              flexShrink: 0,
+              overflowY: "auto",
+            }}
+          >
+            <GatePalette
+              selGate={selGate}
+              selectGate={selectGate}
+              pending={pending}
+              isMobile={isMobile}
+              showInstructions={true}
+            />
+          </div>
+        )}
+
+        {/* Main Area */}
+        <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden" }}>
+          {/* Circuit Grid */}
+          <CircuitGrid
+            nq={nq}
+            ns={ns}
+            circ={circ}
+            selGate={selGate}
+            pending={pending}
+            hovered={hovered}
+            handleClick={handleClick}
+            setHovered={setHovered}
+            isMobile={isMobile}
+          />
+
+          {/* Results Panel */}
+          <div
+            style={{
+              borderTop: `1px solid ${theme.border}`,
+              background: theme.surface,
+              padding: isMobile ? "10px 12px" : "14px 24px",
+              flexShrink: 0,
+              minHeight: results ? (isMobile ? 220 : 270) : 44,
+              transition: "min-height 0.3s",
+            }}
+          >
+            <ResultsPanel
+              results={results}
+              sv={sv}
+              showSv={showSv}
+              setShowSv={setShowSv}
+              chartData={chartData}
+              nq={nq}
+              isMobile={isMobile}
+            />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
