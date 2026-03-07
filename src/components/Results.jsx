@@ -1,5 +1,5 @@
 import { Bar, BarChart, Cell, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
-import { theme, cAbs2, basisLabel } from "../utils.js";
+import { theme, cAbs2, basisLabelKet } from "../utils.js";
 
 /**
  * Probability bar chart component
@@ -36,7 +36,13 @@ function ProbabilityChart({ chartData, nq, isMobile }) {
               fontFamily: "'Source Code Pro',monospace",
               boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
             }}
-            formatter={(v) => [`${(v * 100).toFixed(2)}%`, "P"]}
+            formatter={(v, name, props) => {
+              if (name === "probability") {
+                const count = props.payload.count;
+                return [`${(v * 100).toFixed(2)}% (${count})`, "Prob"];
+              }
+              return [v, name];
+            }}
           />
           <Bar dataKey="probability" radius={[3, 3, 0, 0]} maxBarSize={isMobile ? 30 : 42}>
             {chartData.map((e, i) => (
@@ -88,7 +94,7 @@ function StateVector({ sv, nq, isMobile }) {
             }}
           >
             <span style={{ color: "#3B82F6", minWidth: isMobile ? 50 : 65, fontWeight: 600 }}>
-              {basisLabel(i, nq)}
+              {basisLabelKet(i, nq)}
             </span>
             <span style={{ color: theme.text }}>
               {amp[0].toFixed(3)}
@@ -106,7 +112,7 @@ function StateVector({ sv, nq, isMobile }) {
 /**
  * Results panel component showing probabilities and state vector
  */
-export function ResultsPanel({ results, sv, showSv, setShowSv, chartData, nq, isMobile }) {
+export function ResultsPanel({ results, sv, cbits, showSv, setShowSv, chartData, nq, nc, isMobile }) {
   if (!results) {
     return (
       <div style={{ fontSize: isMobile ? 12 : 13, color: theme.textLight, textAlign: "center", padding: 6 }}>

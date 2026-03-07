@@ -83,11 +83,22 @@ export const cAbs2 = (a) => a[0] * a[0] + a[1] * a[1];
 // =============================================================================
 
 /**
- * Format a basis state index as quantum notation
+ * Format a basis state index as a binary string
  * @param {number} i - State index
  * @param {number} n - Number of qubits
- * @returns {string} Formatted basis state label (e.g., "|00⟩")
+ * @returns {string} Formatted basis state label (e.g., "00")
  */
 export function basisLabel(i, n) {
-  return `|${i.toString(2).padStart(n, "0")}⟩`;
+  return i.toString(2).padStart(n, "0");
+}
+
+/**
+ * Format a basis state index as a ket notation string
+ * @param {number} i - State index
+ * @param {number} n - Number of qubits
+ * @returns {string} Formatted ket notation (e.g., "|00⟩")
+ */
+export function basisLabelKet(i, n) {
+  const binary = i.toString(2).padStart(n, "0");
+  return `|${binary}⟩`;
 }

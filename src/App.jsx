@@ -12,6 +12,8 @@ import { ResultsPanel } from "./components/Results.jsx";
 export default function App() {
   const isMobile = useIsMobile();
   const [showPalette, setShowPalette] = useState(false);
+  const [nc, setNc] = useState(2); // Number of classical bits
+  const [shotsInput, setShotsInput] = useState("1000");
 
   const circuitState = useCircuitState();
   const {
@@ -28,15 +30,26 @@ export default function App() {
     clear: clearCircuit,
     selectGate,
     handleClick,
+    handleCbitClick,
     setHovered,
   } = circuitState;
 
-  const simulation = useSimulation(nq, circ, ns);
-  const { results, sv, showSv, chartData, run, clear: clearResults, setShowSv } = simulation;
+  const simulation = useSimulation(nq, nc, circ, ns);
+  const { results, sv, cbits, showSv, chartData, run, clear: clearResults, setShowSv } = simulation;
+
+  const isShotsValid = /^\d+$/.test(shotsInput) && Number(shotsInput) >= 1 && Number(shotsInput) <= 100000;
+
+  const addC = () => setNc((n) => Math.min(n + 1, 20));
+  const rmC = () => setNc((n) => Math.max(n - 1, 1));
 
   const clear = () => {
     clearCircuit();
     clearResults();
+  };
+
+  const handleRun = () => {
+    if (!isShotsValid) return;
+    run(Number(shotsInput));
   };
 
   return (
@@ -63,13 +76,19 @@ export default function App() {
       {/* Header */}
       <Header
         nq={nq}
+        nc={nc}
         ns={ns}
+        shotsInput={shotsInput}
+        setShotsInput={setShotsInput}
+        isShotsValid={isShotsValid}
         addQ={addQ}
         rmQ={rmQ}
+        addC={addC}
+        rmC={rmC}
         addS={addS}
         rmS={rmS}
         clear={clear}
-        run={run}
+        run={handleRun}
         isMobile={isMobile}
       />
 
@@ -132,7 +151,7 @@ export default function App() {
                   selected
                 </>
               ) : (
-                "Select a Gate 選擇量子邏輯閘"
+                "Select Operation 選擇操作"
               )}
             </span>
 
@@ -156,7 +175,7 @@ export default function App() {
       )}
 
       {/* Mobile: Pending hint */}
-      {isMobile && pending && (
+      {isMobile && pending && pending.gate !== "M" && (
         <div
           style={{
             padding: "6px 12px",
@@ -199,12 +218,15 @@ export default function App() {
           {/* Circuit Grid */}
           <CircuitGrid
             nq={nq}
+            nc={nc}
             ns={ns}
             circ={circ}
+            cbits={cbits}
             selGate={selGate}
             pending={pending}
             hovered={hovered}
             handleClick={handleClick}
+            handleCbitClick={handleCbitClick}
             setHovered={setHovered}
             isMobile={isMobile}
           />
@@ -223,12 +245,31 @@ export default function App() {
             <ResultsPanel
               results={results}
               sv={sv}
+              cbits={cbits}
               showSv={showSv}
               setShowSv={setShowSv}
               chartData={chartData}
               nq={nq}
+              nc={nc}
               isMobile={isMobile}
             />
+          </div>
+
+          {/* Footer */}
+          <div
+            style={{
+              borderTop: `1px solid ${theme.border}`,
+              background: theme.surface,
+              padding: isMobile ? "12px" : "16px 24px",
+              flexShrink: 0,
+              textAlign: "center",
+              fontSize: isMobile ? 10 : 11,
+              color: theme.textLight,
+              lineHeight: 1.6,
+            }}
+          >
+            <div>Copyright © 2026 Center for Quantum Frontiers of Research & Technology (QFort), All Rights Reserved.</div>
+            <div>Designed by Yi-Te Huang and Po-Chen Kuo</div>
           </div>
         </div>
       </div>

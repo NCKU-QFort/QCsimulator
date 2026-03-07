@@ -14,7 +14,7 @@ export function useCircuitState() {
   const [hovered, setHovered] = useState(null); // Hovered cell {q, s}
 
   const addQ = () => {
-    if (nq < 8) {
+    if (nq < 10) {
       setNq((n) => n + 1);
     }
   };
@@ -49,7 +49,7 @@ export function useCircuitState() {
       const nc = {};
 
       Object.entries(circ).forEach(([k, v]) => {
-        if (Number.parseInt(k.split("-")[1], 10) < nn) nc[k] = v;
+        if (Number.parseInt(k.split("-")[1], 10) <= nn) nc[k] = v;
       });
 
       setCirc(nc);
@@ -65,6 +65,21 @@ export function useCircuitState() {
   const selectGate = (g) => {
     setSelGate(selGate === g ? null : g);
     setPending(null);
+  };
+
+  const hasMeasurementInStep = (step, excludeQubit = null) => {
+    return Object.entries(circ).some(([k, v]) => {
+      if (v.type !== "M") return false;
+
+      const [qStr, sStr] = k.split("-");
+      const gateQubit = Number.parseInt(qStr, 10);
+      const gateStep = Number.parseInt(sStr, 10);
+
+      if (gateStep !== step) return false;
+      if (excludeQubit !== null && gateQubit === excludeQubit) return false;
+
+      return true;
+    });
   };
 
   const handleClick = (q, s) => {
@@ -91,9 +106,10 @@ export function useCircuitState() {
 
     if (selGate === "M" && !pending) {
       const k = `${q}-${s}`;
-      if (circ[k]) return;
+      if (circ[k] || hasMeasurementInStep(s)) return;
 
-      setCirc({ ...circ, [k]: { type: "M" } });
+      // Set pending state for measurement, waiting for cbit selection
+      setPending({ gate: "M", qubit: q, step: s });
       return;
     }
 
@@ -142,6 +158,23 @@ export function useCircuitState() {
     setCirc({ ...circ, [k]: { type: selGate } });
   };
 
+  const handleCbitClick = (cbit) => {
+    // Only handle if there's a pending measurement
+    if (!pending || pending.gate !== "M") {
+      return;
+    }
+
+    const k = `${pending.qubit}-${pending.step}`;
+
+    if (hasMeasurementInStep(pending.step, pending.qubit)) {
+      setPending(null);
+      return;
+    }
+
+    setCirc({ ...circ, [k]: { type: "M", cbit } });
+    setPending(null);
+  };
+
   return {
     // State
     nq,
@@ -158,6 +191,7 @@ export function useCircuitState() {
     clear,
     selectGate,
     handleClick,
+    handleCbitClick,
     setHovered,
   };
 }
