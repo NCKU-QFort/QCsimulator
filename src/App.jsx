@@ -254,6 +254,23 @@ export default function App() {
               isMobile={isMobile}
             />
           </div>
+
+          {/* Footer */}
+          <div
+            style={{
+              borderTop: `1px solid ${theme.border}`,
+              background: theme.surface,
+              padding: isMobile ? "12px" : "16px 24px",
+              flexShrink: 0,
+              textAlign: "center",
+              fontSize: isMobile ? 10 : 11,
+              color: theme.textLight,
+              lineHeight: 1.6,
+            }}
+          >
+            <div>Copyright © 2026 Center for Quantum Frontiers of Research & Technology (QFort), All Rights Reserved.</div>
+            <div>Designed by Yi-Te Huang and Po-Chen Kuo</div>
+          </div>
         </div>
       </div>
     </div>
