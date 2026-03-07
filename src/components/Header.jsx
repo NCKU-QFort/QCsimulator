@@ -3,7 +3,7 @@ import { theme, btnC } from "../utils.js";
 /**
  * Circuit control buttons (Q/S adjusters, Clear, Run)
  */
-function CircuitControls({ nq, nc, ns, addQ, rmQ, addC, rmC, addS, rmS, clear, run }) {
+function CircuitControls({ nq, nc, ns, shotsInput, setShotsInput, isShotsValid, addQ, rmQ, addC, rmC, addS, rmS, clear, run }) {
   return (
     <div style={{ display: "flex", gap: 4, alignItems: "center", flexWrap: "wrap" }}>
       {/* Qubit count control */}
@@ -66,6 +66,39 @@ function CircuitControls({ nq, nc, ns, addQ, rmQ, addC, rmC, addS, rmS, clear, r
         <button onClick={addS} style={btnC}>+</button>
       </div>
 
+      {/* Shots input */}
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: 6,
+          padding: "3px 8px",
+          background: theme.bg,
+          borderRadius: 6,
+          border: `1px solid ${isShotsValid ? theme.borderLight : "#EF4444"}`,
+        }}
+      >
+        <span style={{ fontSize: 11, color: theme.textLight, fontWeight: 500 }}>Shots</span>
+        <input
+          value={shotsInput}
+          onChange={(e) => setShotsInput(e.target.value)}
+          inputMode="numeric"
+          style={{
+            width: 64,
+            padding: "2px 6px",
+            borderRadius: 4,
+            border: `1px solid ${isShotsValid ? theme.border : "#EF4444"}`,
+            background: isShotsValid ? theme.surface : "#FEF2F2",
+            color: isShotsValid ? theme.text : "#B91C1C",
+            fontSize: 12,
+            fontWeight: 600,
+            fontFamily: "'Source Code Pro',monospace",
+            outline: "none",
+          }}
+          aria-label="Shots"
+        />
+      </div>
+
       {/* Clear button */}
       <button
         onClick={clear}
@@ -87,17 +120,19 @@ function CircuitControls({ nq, nc, ns, addQ, rmQ, addC, rmC, addS, rmS, clear, r
       {/* Run button */}
       <button
         onClick={run}
+        disabled={!isShotsValid}
         style={{
           padding: "6px 16px",
           borderRadius: 6,
           border: "none",
-          cursor: "pointer",
-          background: "linear-gradient(135deg,#0EA5E9,#6366F1)",
+          cursor: isShotsValid ? "pointer" : "not-allowed",
+          background: isShotsValid ? "linear-gradient(135deg,#0EA5E9,#6366F1)" : theme.border,
           color: "#fff",
           fontWeight: 600,
           fontSize: 12,
           fontFamily: "inherit",
-          boxShadow: "0 2px 8px rgba(14,165,233,0.3)",
+          boxShadow: isShotsValid ? "0 2px 8px rgba(14,165,233,0.3)" : "none",
+          opacity: isShotsValid ? 1 : 0.8,
         }}
       >
         {"▶"} Run
@@ -109,7 +144,7 @@ function CircuitControls({ nq, nc, ns, addQ, rmQ, addC, rmC, addS, rmS, clear, r
 /**
  * Application header component
  */
-export function Header({ nq, nc, ns, addQ, rmQ, addC, rmC, addS, rmS, clear, run, isMobile }) {
+export function Header({ nq, nc, ns, shotsInput, setShotsInput, isShotsValid, addQ, rmQ, addC, rmC, addS, rmS, clear, run, isMobile }) {
   return (
     <div
       style={{
@@ -163,6 +198,9 @@ export function Header({ nq, nc, ns, addQ, rmQ, addC, rmC, addS, rmS, clear, run
         nq={nq}
         nc={nc}
         ns={ns}
+        shotsInput={shotsInput}
+        setShotsInput={setShotsInput}
+        isShotsValid={isShotsValid}
         addQ={addQ}
         rmQ={rmQ}
         addC={addC}

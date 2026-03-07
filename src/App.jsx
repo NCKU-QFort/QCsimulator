@@ -13,6 +13,7 @@ export default function App() {
   const isMobile = useIsMobile();
   const [showPalette, setShowPalette] = useState(false);
   const [nc, setNc] = useState(2); // Number of classical bits
+  const [shotsInput, setShotsInput] = useState("1000");
 
   const circuitState = useCircuitState();
   const {
@@ -36,12 +37,19 @@ export default function App() {
   const simulation = useSimulation(nq, nc, circ, ns);
   const { results, sv, cbits, showSv, chartData, run, clear: clearResults, setShowSv } = simulation;
 
+  const isShotsValid = /^\d+$/.test(shotsInput) && Number(shotsInput) >= 1 && Number(shotsInput) <= 10000;
+
   const addC = () => setNc((n) => Math.min(n + 1, 10));
   const rmC = () => setNc((n) => Math.max(n - 1, 1));
 
   const clear = () => {
     clearCircuit();
     clearResults();
+  };
+
+  const handleRun = () => {
+    if (!isShotsValid) return;
+    run(Number(shotsInput));
   };
 
   return (
@@ -70,6 +78,9 @@ export default function App() {
         nq={nq}
         nc={nc}
         ns={ns}
+        shotsInput={shotsInput}
+        setShotsInput={setShotsInput}
+        isShotsValid={isShotsValid}
         addQ={addQ}
         rmQ={rmQ}
         addC={addC}
@@ -77,7 +88,7 @@ export default function App() {
         addS={addS}
         rmS={rmS}
         clear={clear}
-        run={run}
+        run={handleRun}
         isMobile={isMobile}
       />
 

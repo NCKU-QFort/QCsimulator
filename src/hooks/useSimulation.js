@@ -12,19 +12,52 @@ import { runSim } from "../quantumSimulation.js";
  */
 export function useSimulation(nq, nc, circ, ns) {
   const [results, setResults] = useState(null);
+  const [shotCounts, setShotCounts] = useState(null);
+  const [shotsExecuted, setShotsExecuted] = useState(0);
   const [sv, setSv] = useState(null);
   const [cbits, setCbits] = useState(null);
   const [showSv, setShowSv] = useState(false);
 
-  const run = () => {
-    const { state, cbits: measuredCbits } = runSim(nq, nc, circ, ns);
-    setResults(state.map((a) => cAbs2(a)));
-    setSv(state);
-    setCbits(measuredCbits);
+  const sampleStateIndex = (state) => {
+    const r = Math.random();
+    let cumulative = 0;
+
+    for (let i = 0; i < state.length; i++) {
+      cumulative += cAbs2(state[i]);
+      if (r <= cumulative) return i;
+    }
+
+    return state.length - 1;
+  };
+
+  const run = (shots = 1000) => {
+    if (!Number.isInteger(shots) || shots < 1) return;
+
+    const dimension = 1 << nq;
+    const counts = Array(dimension).fill(0);
+    let lastState = null;
+    let lastCbits = null;
+
+    for (let i = 0; i < shots; i++) {
+      const { state, cbits: measuredCbits } = runSim(nq, nc, circ, ns);
+      const sampledStateIndex = sampleStateIndex(state);
+
+      counts[sampledStateIndex] += 1;
+      lastState = state;
+      lastCbits = measuredCbits;
+    }
+
+    setShotCounts(counts);
+    setShotsExecuted(shots);
+    setResults(counts.map((count) => count / shots));
+    setSv(lastState);
+    setCbits(lastCbits);
   };
 
   const clear = () => {
     setResults(null);
+    setShotCounts(null);
+    setShotsExecuted(0);
     setSv(null);
     setCbits(null);
   };
@@ -43,6 +76,8 @@ export function useSimulation(nq, nc, circ, ns) {
   return {
     // State
     results,
+    shotCounts,
+    shotsExecuted,
     sv,
     cbits,
     showSv,
