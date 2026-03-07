@@ -139,6 +139,14 @@ function GateCell({ q, s, circ, selGate, pending, hovered, handleClick, setHover
     });
   const canPlace = selGate && !hasGate && !(selGate === "M" && isMeasurementStepOccupied);
   const isPendingTarget = pending && pending.step === s && pending.qubit !== q && !hasGate;
+  const isPendingSource =
+    pending &&
+    pending.step === s &&
+    pending.qubit === q &&
+    !hasGate &&
+    GATE_DEFS[pending.gate] &&
+    GATE_DEFS[pending.gate].qubits === 2;
+  const showPendingTargetPreview = isPendingTarget && (isHovered || isMobile);
 
   return (
     <div
@@ -155,7 +163,7 @@ function GateCell({ q, s, circ, selGate, pending, hovered, handleClick, setHover
         zIndex: 1,
         cursor: canPlace || isPendingTarget || (!selGate && hasGate) ? "pointer" : "default",
         background:
-          isPendingTarget && isHovered
+          showPendingTargetPreview
             ? "#3B82F612"
             : isHovered && (canPlace || (!selGate && hasGate))
               ? theme.hover
@@ -235,6 +243,44 @@ function GateCell({ q, s, circ, selGate, pending, hovered, handleClick, setHover
           return null;
         })()}
 
+      {/* Persistent preview for selected first qubit of multi-qubit gate */}
+      {!hasGate && isPendingSource && pending && GATE_DEFS[pending.gate] && (() => {
+        const gateType = pending.gate;
+        const gateColor = GATE_DEFS[gateType].color;
+
+        if (gateType === "CNOT" || gateType === "CZ") {
+          return (
+            <div
+              style={{
+                width: 14,
+                height: 14,
+                borderRadius: "50%",
+                border: `2px solid ${gateColor}`,
+                background: `${gateColor}80`,
+                boxShadow: `0 0 0 3px ${gateColor}22`,
+              }}
+            />
+          );
+        }
+
+        if (gateType === "SWAP") {
+          return (
+            <div
+              style={{
+                fontSize: 16,
+                color: gateColor,
+                fontWeight: "bold",
+                textShadow: `0 0 0.5px ${gateColor}`,
+              }}
+            >
+              {"✕"}
+            </div>
+          );
+        }
+
+        return null;
+      })()}
+
       {/* Preview for measurement */}
       {!hasGate && isHovered && selGate === "M" && !pending && !isMeasurementStepOccupied && (
         <div
@@ -256,7 +302,7 @@ function GateCell({ q, s, circ, selGate, pending, hovered, handleClick, setHover
       )}
 
       {/* Preview for multi-qubit gate target */}
-      {!hasGate && isPendingTarget && isHovered && pending && GATE_DEFS[pending.gate] && (() => {
+      {!hasGate && showPendingTargetPreview && pending && GATE_DEFS[pending.gate] && (() => {
         const gateType = pending.gate;
         const gateColor = GATE_DEFS[gateType].color;
         
