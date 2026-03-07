@@ -102,14 +102,12 @@ export function useSimulation(nq, nc, circ, ns) {
   const chartData = useMemo(() => {
     if (!results || !shotCounts) return [];
 
-    const data = results
+    return results
       .map((p, i) => ({
         state: basisLabel(i, resultBitCount),
         probability: Math.round(p * 10000) / 10000,
         count: shotCounts[i] || 0,
-      }))
-
-    return isMeasurementResult ? data : data.filter((d) => d.probability > 0.0001);
+      }));
   }, [results, resultBitCount, isMeasurementResult, shotCounts]);
 
   return {

@@ -89,7 +89,7 @@ export const cAbs2 = (a) => a[0] * a[0] + a[1] * a[1];
  * @returns {string} Formatted basis state label (e.g., "00")
  */
 export function basisLabel(i, n) {
-  return i.toString(2).padStart(n, "0").split("").reverse().join("");
+  return i.toString(2).padStart(n, "0");
 }
 
 /**
@@ -99,6 +99,6 @@ export function basisLabel(i, n) {
  * @returns {string} Formatted ket notation (e.g., "|00⟩")
  */
 export function basisLabelKet(i, n) {
-  const binary = i.toString(2).padStart(n, "0").split("").reverse().join("");
+  const binary = i.toString(2).padStart(n, "0");
   return `|${binary}⟩`;
 }
