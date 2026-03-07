@@ -14,9 +14,25 @@ export function useSimulation(nq, nc, circ, ns) {
   const [results, setResults] = useState(null);
   const [shotCounts, setShotCounts] = useState(null);
   const [shotsExecuted, setShotsExecuted] = useState(0);
+  const [resultBitCount, setResultBitCount] = useState(nq);
+  const [isMeasurementResult, setIsMeasurementResult] = useState(false);
   const [sv, setSv] = useState(null);
   const [cbits, setCbits] = useState(null);
   const [showSv, setShowSv] = useState(false);
+
+  const getMeasuredCbitIndices = () => {
+    const usedCbits = new Set();
+
+    Object.entries(circ).forEach(([, gate]) => {
+      if (!gate || gate.type !== "M" || gate.cbit === undefined) return;
+
+      if (Number.isInteger(gate.cbit) && gate.cbit >= 0 && gate.cbit < nc) {
+        usedCbits.add(gate.cbit);
+      }
+    });
+
+    return [...usedCbits].sort((a, b) => a - b);
+  };
 
   const sampleStateIndex = (state) => {
     const r = Math.random();
@@ -35,6 +51,9 @@ export function useSimulation(nq, nc, circ, ns) {
 
     const dimension = 1 << nq;
     const counts = Array(dimension).fill(0);
+    const measuredCbitIndices = getMeasuredCbitIndices();
+    const hasMeasurements = measuredCbitIndices.length > 0;
+    const cbitCounts = hasMeasurements ? Array(1 << nc).fill(0) : null;
     let lastState = null;
     let lastCbits = null;
 
@@ -43,13 +62,29 @@ export function useSimulation(nq, nc, circ, ns) {
       const sampledStateIndex = sampleStateIndex(state);
 
       counts[sampledStateIndex] += 1;
+
+      if (cbitCounts) {
+        let cbitIndex = 0;
+
+        for (let c = 0; c < nc; c++) {
+          const bit = measuredCbits?.[c] === 1 ? 1 : 0;
+          cbitIndex = (cbitIndex << 1) | bit;
+        }
+
+        cbitCounts[cbitIndex] += 1;
+      }
+
       lastState = state;
       lastCbits = measuredCbits;
     }
 
-    setShotCounts(counts);
+    const finalCounts = cbitCounts || counts;
+
+    setShotCounts(finalCounts);
     setShotsExecuted(shots);
-    setResults(counts.map((count) => count / shots));
+    setResults(finalCounts.map((count) => count / shots));
+    setResultBitCount(cbitCounts ? nc : nq);
+    setIsMeasurementResult(Boolean(cbitCounts));
     setSv(lastState);
     setCbits(lastCbits);
   };
@@ -58,20 +93,24 @@ export function useSimulation(nq, nc, circ, ns) {
     setResults(null);
     setShotCounts(null);
     setShotsExecuted(0);
+    setResultBitCount(nq);
+    setIsMeasurementResult(false);
     setSv(null);
     setCbits(null);
   };
 
   const chartData = useMemo(() => {
-    if (!results) return [];
+    if (!results || !shotCounts) return [];
 
-    return results
+    const data = results
       .map((p, i) => ({
-        state: basisLabel(i, nq),
+        state: basisLabel(i, resultBitCount),
         probability: Math.round(p * 10000) / 10000,
+        count: shotCounts[i] || 0,
       }))
-      .filter((d) => d.probability > 0.0001);
-  }, [results, nq]);
+
+    return isMeasurementResult ? data : data.filter((d) => d.probability > 0.0001);
+  }, [results, resultBitCount, isMeasurementResult, shotCounts]);
 
   return {
     // State

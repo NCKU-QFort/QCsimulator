@@ -14,7 +14,7 @@ export function useCircuitState() {
   const [hovered, setHovered] = useState(null); // Hovered cell {q, s}
 
   const addQ = () => {
-    if (nq < 8) {
+    if (nq < 10) {
       setNq((n) => n + 1);
     }
   };

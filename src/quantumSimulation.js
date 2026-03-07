@@ -1,6 +1,9 @@
 import { cAdd, cMul, cAbs2 } from "./utils.js";
 import { GATE_DEFS } from "./gateDefinitions.js";
 
+// Measurement error probability: 1% chance to flip 0→1 or 1→0
+const MEASUREMENT_ERROR_RATE = 0.01;
+
 /**
  * Apply a single-qubit gate to the quantum state
  * @param {Array} st - Current state vector
@@ -154,7 +157,7 @@ export function measureQubit(st, q, n) {
 export function runSim(nq, nc, circ, ns) {
   const d = 1 << nq;
   let st = Array.from({ length: d }, (_, i) => (i === 0 ? [1, 0] : [0, 0]));
-  const cbits = Array(nc).fill(null); // Classical bits start as null (unmeasured)
+  const cbits = Array(nc).fill(0); // Classical bits initialized to 0
 
   for (let s = 1; s <= ns; s++) {
     const pr = new Set();
@@ -170,7 +173,13 @@ export function runSim(nq, nc, circ, ns) {
         // Perform measurement
         const measurement = measureQubit(st, q, nq);
         st = measurement.state;
-        cbits[g.cbit] = measurement.result;
+        
+        // Apply measurement error: 0.5% chance to flip the result
+        let result = measurement.result;
+        if (Math.random() < MEASUREMENT_ERROR_RATE) {
+          result = result === 0 ? 1 : 0;
+        }
+        cbits[g.cbit] = result;
       } else if (g.type === "CNOT_CTRL") {
         st = applyCNOT(st, q, g.target, nq);
         pr.add(`${g.target}-${s}`);

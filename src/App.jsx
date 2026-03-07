@@ -37,9 +37,9 @@ export default function App() {
   const simulation = useSimulation(nq, nc, circ, ns);
   const { results, sv, cbits, showSv, chartData, run, clear: clearResults, setShowSv } = simulation;
 
-  const isShotsValid = /^\d+$/.test(shotsInput) && Number(shotsInput) >= 1 && Number(shotsInput) <= 10000;
+  const isShotsValid = /^\d+$/.test(shotsInput) && Number(shotsInput) >= 1 && Number(shotsInput) <= 100000;
 
-  const addC = () => setNc((n) => Math.min(n + 1, 10));
+  const addC = () => setNc((n) => Math.min(n + 1, 20));
   const rmC = () => setNc((n) => Math.max(n - 1, 1));
 
   const clear = () => {
@@ -175,7 +175,7 @@ export default function App() {
       )}
 
       {/* Mobile: Pending hint */}
-      {isMobile && pending && (
+      {isMobile && pending && pending.gate !== "M" && (
         <div
           style={{
             padding: "6px 12px",

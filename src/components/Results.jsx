@@ -1,5 +1,5 @@
 import { Bar, BarChart, Cell, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
-import { theme, cAbs2, basisLabel } from "../utils.js";
+import { theme, cAbs2, basisLabelKet } from "../utils.js";
 
 /**
  * Probability bar chart component
@@ -36,7 +36,13 @@ function ProbabilityChart({ chartData, nq, isMobile }) {
               fontFamily: "'Source Code Pro',monospace",
               boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
             }}
-            formatter={(v) => [`${(v * 100).toFixed(2)}%`, "P"]}
+            formatter={(v, name, props) => {
+              if (name === "probability") {
+                const count = props.payload.count;
+                return [`${(v * 100).toFixed(2)}% (${count})`, "Prob"];
+              }
+              return [v, name];
+            }}
           />
           <Bar dataKey="probability" radius={[3, 3, 0, 0]} maxBarSize={isMobile ? 30 : 42}>
             {chartData.map((e, i) => (
@@ -88,7 +94,7 @@ function StateVector({ sv, nq, isMobile }) {
             }}
           >
             <span style={{ color: "#3B82F6", minWidth: isMobile ? 50 : 65, fontWeight: 600 }}>
-              {basisLabel(i, nq)}
+              {basisLabelKet(i, nq)}
             </span>
             <span style={{ color: theme.text }}>
               {amp[0].toFixed(3)}
@@ -115,60 +121,8 @@ export function ResultsPanel({ results, sv, cbits, showSv, setShowSv, chartData,
     );
   }
 
-  // Check if any measurements were performed
-  const hasMeasurements = cbits && cbits.some((c) => c !== null);
-
   return (
     <div>
-      {/* Classical Bits Display */}
-      {hasMeasurements && (
-        <div
-          style={{
-            marginBottom: 12,
-            padding: isMobile ? "8px 10px" : "10px 12px",
-            background: theme.surface,
-            border: `1px solid ${theme.border}`,
-            borderRadius: 6,
-          }}
-        >
-          <div
-            style={{
-              fontSize: isMobile ? 11 : 12,
-              fontWeight: 600,
-              color: theme.text,
-              marginBottom: 8,
-            }}
-          >
-            Classical Bits <span style={{ color: theme.textLight, fontWeight: 400, fontSize: 10 }}>— 古典位元值</span>
-          </div>
-          <div
-            style={{
-              display: "flex",
-              flexWrap: "wrap",
-              gap: isMobile ? 6 : 8,
-              fontFamily: "'Source Code Pro', monospace",
-              fontSize: isMobile ? 11 : 12,
-            }}
-          >
-            {cbits.map((val, i) => (
-              <div
-                key={i}
-                style={{
-                  padding: "4px 10px",
-                  background: val !== null ? theme.accentBg : theme.bg,
-                  border: `1px solid ${val !== null ? theme.accent : theme.border}`,
-                  borderRadius: 4,
-                  color: val !== null ? theme.accent : theme.textLight,
-                  fontWeight: val !== null ? 600 : 400,
-                }}
-              >
-                c<sub>{i}</sub> = {val !== null ? val : "—"}
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
       <div
         style={{
           display: "flex",
