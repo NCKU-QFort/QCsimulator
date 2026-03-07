@@ -176,7 +176,7 @@ export function Header({ nq, nc, ns, shotsInput, setShotsInput, isShotsValid, ad
         <div style={{ minWidth: 0 }}>
           <div
             style={{
-              fontSize: isMobile ? 13 : 15,
+              fontSize: 15,
               fontWeight: 700,
               color: theme.text,
               whiteSpace: "nowrap",
@@ -186,11 +186,9 @@ export function Header({ nq, nc, ns, shotsInput, setShotsInput, isShotsValid, ad
           >
             Quantum Circuit Simulator
           </div>
-          {!isMobile && (
-            <div style={{ fontSize: 11, color: theme.textLight }}>
-              {"量子電路模擬器"}
-            </div>
-          )}
+          <div style={{ fontSize: 12, color: theme.textLight }}>
+            {"量子電路模擬器"}
+          </div>
         </div>
       </div>
 
