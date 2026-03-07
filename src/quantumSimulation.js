@@ -156,7 +156,7 @@ export function runSim(nq, nc, circ, ns) {
   let st = Array.from({ length: d }, (_, i) => (i === 0 ? [1, 0] : [0, 0]));
   const cbits = Array(nc).fill(null); // Classical bits start as null (unmeasured)
 
-  for (let s = 0; s < ns; s++) {
+  for (let s = 1; s <= ns; s++) {
     const pr = new Set();
 
     for (let q = 0; q < nq; q++) {

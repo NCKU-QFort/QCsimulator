@@ -49,7 +49,7 @@ export function useCircuitState() {
       const nc = {};
 
       Object.entries(circ).forEach(([k, v]) => {
-        if (Number.parseInt(k.split("-")[1], 10) < nn) nc[k] = v;
+        if (Number.parseInt(k.split("-")[1], 10) <= nn) nc[k] = v;
       });
 
       setCirc(nc);
@@ -65,6 +65,21 @@ export function useCircuitState() {
   const selectGate = (g) => {
     setSelGate(selGate === g ? null : g);
     setPending(null);
+  };
+
+  const hasMeasurementInStep = (step, excludeQubit = null) => {
+    return Object.entries(circ).some(([k, v]) => {
+      if (v.type !== "M") return false;
+
+      const [qStr, sStr] = k.split("-");
+      const gateQubit = Number.parseInt(qStr, 10);
+      const gateStep = Number.parseInt(sStr, 10);
+
+      if (gateStep !== step) return false;
+      if (excludeQubit !== null && gateQubit === excludeQubit) return false;
+
+      return true;
+    });
   };
 
   const handleClick = (q, s) => {
@@ -91,7 +106,7 @@ export function useCircuitState() {
 
     if (selGate === "M" && !pending) {
       const k = `${q}-${s}`;
-      if (circ[k]) return;
+      if (circ[k] || hasMeasurementInStep(s)) return;
 
       // Set pending state for measurement, waiting for cbit selection
       setPending({ gate: "M", qubit: q, step: s });
@@ -150,6 +165,12 @@ export function useCircuitState() {
     }
 
     const k = `${pending.qubit}-${pending.step}`;
+
+    if (hasMeasurementInStep(pending.step, pending.qubit)) {
+      setPending(null);
+      return;
+    }
+
     setCirc({ ...circ, [k]: { type: "M", cbit } });
     setPending(null);
   };

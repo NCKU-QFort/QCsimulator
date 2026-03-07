@@ -130,7 +130,14 @@ function GateCell({ q, s, circ, selGate, pending, hovered, handleClick, setHover
   const gate = circ[`${q}-${s}`];
   const isHovered = hovered && hovered.q === q && hovered.s === s;
   const hasGate = Boolean(gate);
-  const canPlace = selGate && !hasGate;
+  const isMeasurementStepOccupied =
+    selGate === "M" &&
+    Object.entries(circ).some(([key, value]) => {
+      if (value.type !== "M") return false;
+      const step = Number.parseInt(key.split("-")[1], 10);
+      return step === s;
+    });
+  const canPlace = selGate && !hasGate && !(selGate === "M" && isMeasurementStepOccupied);
   const isPendingTarget = pending && pending.step === s && pending.qubit !== q && !hasGate;
 
   return (
@@ -229,7 +236,7 @@ function GateCell({ q, s, circ, selGate, pending, hovered, handleClick, setHover
         })()}
 
       {/* Preview for measurement */}
-      {!hasGate && isHovered && selGate === "M" && !pending && (
+      {!hasGate && isHovered && selGate === "M" && !pending && !isMeasurementStepOccupied && (
         <div
           style={{
             width: isMobile ? 36 : 42,
@@ -329,11 +336,14 @@ function QubitWire({ q, ns, circ, selGate, pending, hovered, handleClick, setHov
         />
 
         {/* Gate cells */}
-        {Array.from({ length: ns }, (_, s) => (
+        {Array.from({ length: ns }, (_, stepIndex) => {
+          const step = stepIndex + 1;
+
+          return (
           <GateCell
-            key={s}
+            key={step}
             q={q}
-            s={s}
+            s={step}
             circ={circ}
             selGate={selGate}
             pending={pending}
@@ -344,7 +354,8 @@ function QubitWire({ q, ns, circ, selGate, pending, hovered, handleClick, setHov
             CH={CH}
             CW={CW}
           />
-        ))}
+          );
+        })}
       </div>
     </div>
   );
@@ -354,6 +365,8 @@ function QubitWire({ q, ns, circ, selGate, pending, hovered, handleClick, setHov
  * A single classical bit wire (row) in the circuit
  */
 function ClassicalBitWire({ nc, nq, ns, circ, cbits, isMobile, CH, CW, LBL_W }) {
+  const measurementColor = "#888";
+
   return (
     <div style={{ display: "flex", alignItems: "center", height: CH }}>
       <div
@@ -388,22 +401,22 @@ function ClassicalBitWire({ nc, nq, ns, circ, cbits, isMobile, CH, CW, LBL_W }) 
         />
 
         {/* Show cbit assignments and measured values */}
-        {Array.from({ length: ns }, (_, s) => {
+        {Array.from({ length: ns }, (_, stepIndex) => {
+          const step = stepIndex + 1;
+
           // Find if there's a measurement at this step
           let measurementCbit = null;
           for (let q = 0; q < nq; q++) {
-            const g = circ[`${q}-${s}`];
+            const g = circ[`${q}-${step}`];
             if (g && g.type === "M" && g.cbit !== undefined) {
               measurementCbit = g.cbit;
               break;
             }
           }
 
-          const hasValue = cbits && measurementCbit !== null && cbits[measurementCbit] !== null;
-
           return (
             <div
-              key={s}
+              key={step}
               style={{
                 width: CW,
                 height: CH,
@@ -418,29 +431,18 @@ function ClassicalBitWire({ nc, nq, ns, circ, cbits, isMobile, CH, CW, LBL_W }) 
               {measurementCbit !== null && (
                 <div
                   style={{
-                    display: "flex",
-                    flexDirection: "column",
-                    alignItems: "center",
                     fontSize: isMobile ? 9 : 10,
                     fontFamily: "'Source Code Pro', monospace",
                     pointerEvents: "none",
+                    position: "absolute",
+                    left: "calc(50% + 7px)",
+                    top: isMobile ? 4 : 5,
+                    transform: "translateX(-50%)",
                   }}
                 >
-                  <div style={{ color: theme.accent, fontWeight: 600 }}>
+                  <div style={{ color: measurementColor, fontWeight: 600 }}>
                     c<sub style={{ fontSize: isMobile ? 7 : 8 }}>{measurementCbit}</sub>
                   </div>
-                  {hasValue && (
-                    <div
-                      style={{
-                        color: theme.text,
-                        fontWeight: 700,
-                        fontSize: isMobile ? 11 : 13,
-                        marginTop: 2,
-                      }}
-                    >
-                      {cbits[measurementCbit]}
-                    </div>
-                  )}
                 </div>
               )}
             </div>
@@ -457,7 +459,7 @@ function ClassicalBitWire({ nc, nq, ns, circ, cbits, isMobile, CH, CW, LBL_W }) 
 function CbitSelector({ nc, nq, pending, handleCbitClick, isMobile, CH, CW, LBL_W }) {
   if (!pending || pending.gate !== "M") return null;
 
-  const left = LBL_W + 5 + pending.step * CW;
+  const left = LBL_W + 5 + (pending.step - 1) * CW;
   const top = pending.qubit * CH + CH + 10;
   const grayColor = "#888";
 
@@ -573,12 +575,18 @@ function getMeasurementConnections(circ, nq, step) {
 /**
  * Renders vertical connection lines between qubits
  */
-function ConnectionLines({ circ, nq, nc, ns, pending, hovered, CH, CW, LBL_W }) {
+function ConnectionLines({ circ, nq, nc, ns, pending, hovered, isMobile, CH, CW, LBL_W }) {
+  const measurementGateSize = isMobile ? 36 : 42;
+  const measurementStartOffset = measurementGateSize / 2;
+  const classicalSeparatorHeight = isMobile ? 12 : 16;
+  const measurementArrowHeight = 9;
+
   return (
     <>
       {/* Static connections from circuit */}
-      {Array.from({ length: ns }, (_, s) => {
-        const connections = getConnections(circ, nq, s);
+      {Array.from({ length: ns }, (_, stepIndex) => {
+        const step = stepIndex + 1;
+        const connections = getConnections(circ, nq, step);
 
         return connections.map((c, ci) => {
           const top = Math.min(c.from, c.to) * CH + CH / 2;
@@ -586,10 +594,10 @@ function ConnectionLines({ circ, nq, nc, ns, pending, hovered, CH, CW, LBL_W }) 
 
           return (
             <div
-              key={`${s}-${ci}`}
+              key={`${step}-${ci}`}
               style={{
                 position: "absolute",
-                left: LBL_W + 5 + s * CW + CW / 2 - 1,
+                left: LBL_W + 5 + (step - 1) * CW + CW / 2 - 1,
                 top,
                 width: 2.5,
                 height: bottom - top,
@@ -604,18 +612,19 @@ function ConnectionLines({ circ, nq, nc, ns, pending, hovered, CH, CW, LBL_W }) 
       })}
 
       {/* Measurement connections from qubits to classical bits */}
-      {Array.from({ length: ns }, (_, s) => {
-        const measurements = getMeasurementConnections(circ, nq, s);
+      {Array.from({ length: ns }, (_, stepIndex) => {
+        const step = stepIndex + 1;
+        const measurements = getMeasurementConnections(circ, nq, step);
 
         return measurements.map((m, mi) => {
           // Connection goes from qubit to classical bit wire
-          const top = m.qubit * CH + CH / 2;
+          const top = m.qubit * CH + CH / 2 + measurementStartOffset;
           // Classical bit wire is positioned after all qubits
-          const bottom = nq * CH + CH / 2;
-          const centerX = LBL_W + 5 + s * CW + CW / 2;
+          const bottom = nq * CH + classicalSeparatorHeight + CH / 2;
+          const centerX = LBL_W + 5 + (step - 1) * CW + CW / 2;
 
           return (
-            <React.Fragment key={`m-${s}-${mi}`}>
+            <React.Fragment key={`m-${step}-${mi}`}>
               {/* Dashed line */}
               <div
                 style={{
@@ -623,24 +632,24 @@ function ConnectionLines({ circ, nq, nc, ns, pending, hovered, CH, CW, LBL_W }) 
                   left: centerX - 1,
                   top,
                   width: 2.5,
-                  height: bottom - top,
+                  height: Math.max(0, bottom - top - measurementArrowHeight),
                   background: "transparent",
                   borderLeft: `2.5px dashed ${m.color}`,
                   zIndex: 2,
                   pointerEvents: "none",
                 }}
               />
-              {/* Circle at intersection with classical wire */}
+              {/* Arrowhead pointing to classical wire */}
               <div
                 style={{
                   position: "absolute",
-                  left: centerX - 4,
-                  top: bottom - 4,
-                  width: 8,
-                  height: 8,
-                  borderRadius: "50%",
-                  background: m.color,
-                  border: `1.5px solid ${theme.bg}`,
+                  left: centerX - 6,
+                  top: bottom - measurementArrowHeight,
+                  width: 0,
+                  height: 0,
+                  borderLeft: "6px solid transparent",
+                  borderRight: "6px solid transparent",
+                  borderTop: `9px solid ${m.color}`,
                   zIndex: 3,
                   pointerEvents: "none",
                 }}
@@ -652,9 +661,9 @@ function ConnectionLines({ circ, nq, nc, ns, pending, hovered, CH, CW, LBL_W }) 
 
       {/* Pending measurement connection (dashed) */}
       {pending && pending.gate === "M" && (() => {
-        const top = pending.qubit * CH + CH / 2;
-        const bottom = nq * CH + CH / 2;
-        const centerX = LBL_W + 5 + pending.step * CW + CW / 2;
+        const top = pending.qubit * CH + CH / 2 + measurementStartOffset;
+        const bottom = nq * CH + classicalSeparatorHeight + CH / 2;
+        const centerX = LBL_W + 5 + (pending.step - 1) * CW + CW / 2;
         const grayColor = "#888";
 
         return (
@@ -666,24 +675,24 @@ function ConnectionLines({ circ, nq, nc, ns, pending, hovered, CH, CW, LBL_W }) 
                 left: centerX - 1,
                 top,
                 width: 2.5,
-                height: bottom - top,
+                height: Math.max(0, bottom - top - measurementArrowHeight),
                 background: "transparent",
                 borderLeft: `2.5px dashed ${grayColor}`,
                 zIndex: 2,
                 pointerEvents: "none",
               }}
             />
-            {/* Circle at intersection with classical wire */}
+            {/* Arrowhead pointing to classical wire */}
             <div
               style={{
                 position: "absolute",
-                left: centerX - 4,
-                top: bottom - 4,
-                width: 8,
-                height: 8,
-                borderRadius: "50%",
-                background: grayColor,
-                border: `1.5px solid ${theme.bg}`,
+                left: centerX - 6,
+                top: bottom - measurementArrowHeight,
+                width: 0,
+                height: 0,
+                borderLeft: "6px solid transparent",
+                borderRight: "6px solid transparent",
+                borderTop: `9px solid ${grayColor}`,
                 zIndex: 3,
                 pointerEvents: "none",
               }}
@@ -707,7 +716,7 @@ function ConnectionLines({ circ, nq, nc, ns, pending, hovered, CH, CW, LBL_W }) 
             <div
               style={{
                 position: "absolute",
-                left: LBL_W + 5 + pending.step * CW + CW / 2 - 1,
+                left: LBL_W + 5 + (pending.step - 1) * CW + CW / 2 - 1,
                 top,
                 width: 2.5,
                 height: bottom - top,
@@ -743,9 +752,12 @@ export function CircuitGrid({ nq, nc, ns, circ, cbits, selGate, pending, hovered
       <div style={{ display: "inline-block", minWidth: "100%" }}>
         {/* Step numbers header */}
         <div style={{ display: "flex", marginLeft: LBL_W + 5, marginBottom: 4 }}>
-          {Array.from({ length: ns }, (_, s) => (
+          {Array.from({ length: ns }, (_, stepIndex) => {
+            const step = stepIndex + 1;
+
+            return (
             <div
-              key={s}
+              key={step}
               style={{
                 width: CW,
                 textAlign: "center",
@@ -755,9 +767,10 @@ export function CircuitGrid({ nq, nc, ns, circ, cbits, selGate, pending, hovered
                 fontWeight: 500,
               }}
             >
-              {s}
+              {step}
             </div>
-          ))}
+            );
+          })}
         </div>
 
         {/* Circuit grid with connections */}
@@ -817,6 +830,7 @@ export function CircuitGrid({ nq, nc, ns, circ, cbits, selGate, pending, hovered
             ns={ns}
             pending={pending}
             hovered={hovered}
+            isMobile={isMobile}
             CH={CH}
             CW={CW}
             LBL_W={LBL_W}
