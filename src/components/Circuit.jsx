@@ -146,6 +146,8 @@ function GateCell({ q, s, circ, selGate, pending, hovered, handleClick, setHover
     !hasGate &&
     GATE_DEFS[pending.gate] &&
     GATE_DEFS[pending.gate].qubits === 2;
+  const isPendingMeasurementSource =
+    pending && pending.gate === "M" && pending.step === s && pending.qubit === q && !hasGate;
   const showPendingTargetPreview = isPendingTarget && (isHovered || isMobile);
 
   return (
@@ -298,6 +300,38 @@ function GateCell({ q, s, circ, selGate, pending, hovered, handleClick, setHover
           }}
         >
           M
+        </div>
+      )}
+
+      {/* Persistent preview for selected measurement qubit */}
+      {isPendingMeasurementSource && (
+        <div
+          style={{
+            width: isMobile ? 36 : 42,
+            height: isMobile ? 36 : 42,
+            borderRadius: 7,
+            background: theme.surface,
+            border: `2px solid ${theme.border}`,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            flexDirection: "column",
+            boxShadow: "0 1px 3px rgba(0,0,0,0.06)",
+          }}
+        >
+          <div
+            style={{
+              width: 16,
+              height: 9,
+              borderBottom: `2px solid ${theme.textMid}`,
+              borderRadius: "0 0 50% 50%",
+              marginTop: 2,
+              transform: "rotate(180deg)",
+            }}
+          />
+          <div style={{ fontSize: 8, color: theme.textMid, marginTop: 1, fontWeight: 600 }}>
+            M
+          </div>
         </div>
       )}
 

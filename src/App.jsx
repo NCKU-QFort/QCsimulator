@@ -151,7 +151,7 @@ export default function App() {
                   selected
                 </>
               ) : (
-                "Select a Gate 選擇量子邏輯閘"
+                "Select Operation 選擇操作"
               )}
             </span>
 

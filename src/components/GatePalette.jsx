@@ -103,7 +103,7 @@ function UsageInstructions() {
       }}
     >
       <div style={{ fontWeight: 600, color: theme.text, marginBottom: 4, fontSize: 12 }}>
-        {"操作說明"} Usage
+        {"說明"} Instructions
       </div>
       <div>1. {"選擇下方操作"}</div>
       <div>2. {"點擊電路格放置操作"}</div>
