@@ -48,7 +48,6 @@ function GateRenderer({ gate, isMobile }) {
           height: 14,
           borderRadius: "50%",
           background: GATE_DEFS.CNOT.color,
-          boxShadow: `0 0 0 2px ${theme.surface}`,
         }}
       />
     );
@@ -70,7 +69,6 @@ function GateRenderer({ gate, isMobile }) {
           height: 14,
           borderRadius: "50%",
           background: GATE_DEFS.CZ.color,
-          boxShadow: `0 0 0 2px ${theme.surface}`,
         }}
       />
     );
@@ -556,7 +554,7 @@ function ClassicalBitWire({ nc, nq, ns, circ, cbits, isMobile, CH, CW, LBL_W }) 
                     fontFamily: "'Source Code Pro', monospace",
                     pointerEvents: "none",
                     position: "absolute",
-                    left: "calc(50% + 7px)",
+                    left: "calc(50% + 10px)",
                     top: isMobile ? 4 : 5,
                     transform: "translateX(-50%)",
                   }}
@@ -939,7 +937,7 @@ function ConnectionLines({ circ, nq, nc, ns, pending, hovered, isMobile, CH, CW,
         const ifConnections = getIfConnections(circ, nq, step);
 
         return ifConnections.map((c, ci) => {
-          const top = c.qubit * CH + CH / 2 + ifStartOffset;
+          const top = c.qubit * CH + CH / 2;
           const classicalY = nq * CH + classicalSeparatorHeight + CH / 2;
           const centerX = LBL_W + 5 + (step - 1) * CW + CW / 2;
 
@@ -953,7 +951,7 @@ function ConnectionLines({ circ, nq, nc, ns, pending, hovered, isMobile, CH, CW,
                   width: 2,
                   height: Math.max(0, classicalY - top),
                   background: c.color,
-                  zIndex: 2,
+                  zIndex: 0,
                   pointerEvents: "none",
                 }}
               />
