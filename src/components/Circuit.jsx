@@ -917,7 +917,7 @@ function ConnectionLines({ circ, nq, nc, ns, pending, hovered, isMobile, CH, CW,
               <div
                 style={{
                   position: "absolute",
-                  left: centerX - 6,
+                  left: centerX - 4.75,
                   top: bottom - measurementArrowHeight,
                   width: 0,
                   height: 0,
@@ -1022,7 +1022,7 @@ function ConnectionLines({ circ, nq, nc, ns, pending, hovered, isMobile, CH, CW,
             <div
               style={{
                 position: "absolute",
-                left: centerX - 6,
+                left: centerX - 4.75,
                 top: bottom - measurementArrowHeight,
                 width: 0,
                 height: 0,
