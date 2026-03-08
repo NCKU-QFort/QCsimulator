@@ -104,6 +104,20 @@ export default function App() {
     "Select Operation 選擇操作"
   );
 
+  const isTwoQubitSelected = Boolean(selGate && GATE_DEFS[selGate] && GATE_DEFS[selGate].qubits === 2);
+  const isTwoQubitPendingSecond = Boolean(pending && isTwoQubitSelected && pending.gate === selGate);
+
+  let instructionMessage = "Click any operation in the circuit to remove it";
+  if (selGate === "IF") {
+    instructionMessage = "Choose a gate in the circuit";
+  } else if (selGate === "M" || (selGate && GATE_DEFS[selGate] && GATE_DEFS[selGate].qubits === 1)) {
+    instructionMessage = "Choose a position in the circuit to apply the operation";
+  } else if (isTwoQubitSelected && !isTwoQubitPendingSecond) {
+    instructionMessage = "Choose a position for the first qubit";
+  } else if (isTwoQubitPendingSecond) {
+    instructionMessage = "Choose the second qubit in the same step";
+  }
+
   return (
     <div
       style={{
@@ -265,6 +279,29 @@ export default function App() {
               {selectedOperationMessage}
             </div>
           )}
+
+          <div
+            style={{
+              width: "100%",
+              height: 34,
+              padding: "0 12px",
+              background: "#FEF3C7",
+              borderBottom: "1px solid #F59E0B",
+              color: "#92400E",
+              textAlign: "left",
+              display: "flex",
+              alignItems: "center",
+              fontSize: 12,
+              fontWeight: 500,
+              flexShrink: 0,
+              whiteSpace: "nowrap",
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+            }}
+            title={instructionMessage}
+          >
+            {instructionMessage}
+          </div>
 
           {/* Circuit Grid */}
           <CircuitGrid
