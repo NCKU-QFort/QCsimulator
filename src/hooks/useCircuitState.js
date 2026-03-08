@@ -5,13 +5,63 @@ import { GATE_DEFS } from "../gateDefinitions.js";
  * Hook for managing quantum circuit state and operations
  * @returns {Object} Circuit state and control functions
  */
-export function useCircuitState() {
+export function useCircuitState(nc = 1) {
   const [nq, setNq] = useState(2); // Number of qubits
   const [ns, setNs] = useState(10); // Number of steps
   const [circ, setCirc] = useState({}); // Circuit configuration
   const [selGate, setSelGate] = useState(null); // Selected gate
-  const [pending, setPending] = useState(null); // Pending multi-qubit gate
+  const [pending, setPending] = useState(null); // Pending actions
   const [hovered, setHovered] = useState(null); // Hovered cell {q, s}
+
+  const maxIfValue = (1 << Math.max(1, nc)) - 1;
+
+  const getRelatedGateKeys = (q, s, gate) => {
+    const k = `${q}-${s}`;
+    if (!gate) return [k];
+
+    if (gate.type === "CNOT_CTRL" || gate.type === "CZ_CTRL") {
+      return [k, `${gate.target}-${s}`];
+    }
+
+    if (gate.type === "CNOT_TGT" || gate.type === "CZ_TGT") {
+      return [k, `${gate.control}-${s}`];
+    }
+
+    if (gate.type === "SWAP_A" || gate.type === "SWAP_B") {
+      return [k, `${gate.partner}-${s}`];
+    }
+
+    return [k];
+  };
+
+  const applyIfCondition = (baseCirc, keys, anchorQubit, value) => {
+    const next = { ...baseCirc };
+
+    keys.forEach((key) => {
+      if (!next[key]) return;
+      next[key] = {
+        ...next[key],
+        if: {
+          value,
+          anchor: anchorQubit,
+        },
+      };
+    });
+
+    return next;
+  };
+
+  const removeIfCondition = (baseCirc, keys) => {
+    const next = { ...baseCirc };
+
+    keys.forEach((key) => {
+      if (!next[key] || !next[key].if) return;
+      const { if: _unusedIf, ...rest } = next[key];
+      next[key] = rest;
+    });
+
+    return next;
+  };
 
   const addQ = () => {
     if (nq < 10) {
@@ -22,7 +72,7 @@ export function useCircuitState() {
   const rmQ = () => {
     if (nq > 1) {
       const nn = nq - 1;
-      const nc = {};
+      const nextCirc = {};
 
       Object.entries(circ).forEach(([k, v]) => {
         const q = Number.parseInt(k.split("-")[0], 10);
@@ -32,11 +82,11 @@ export function useCircuitState() {
           (v.target === undefined || v.target < nn) &&
           (v.partner === undefined || v.partner < nn)
         ) {
-          nc[k] = v;
+          nextCirc[k] = v;
         }
       });
 
-      setCirc(nc);
+      setCirc(nextCirc);
       setNq(nn);
     }
   };
@@ -46,13 +96,13 @@ export function useCircuitState() {
   const rmS = () => {
     if (ns > 1) {
       const nn = ns - 1;
-      const nc = {};
+      const nextCirc = {};
 
       Object.entries(circ).forEach(([k, v]) => {
-        if (Number.parseInt(k.split("-")[1], 10) <= nn) nc[k] = v;
+        if (Number.parseInt(k.split("-")[1], 10) <= nn) nextCirc[k] = v;
       });
 
-      setCirc(nc);
+      setCirc(nextCirc);
       setNs(nn);
     }
   };
@@ -88,17 +138,17 @@ export function useCircuitState() {
       const ex = circ[k];
 
       if (ex) {
-        const nc = { ...circ };
-        delete nc[k];
+        const nextCirc = { ...circ };
+        delete nextCirc[k];
 
-        if (ex.type === "CNOT_CTRL") delete nc[`${ex.target}-${s}`];
-        if (ex.type === "CNOT_TGT") delete nc[`${ex.control}-${s}`];
-        if (ex.type === "CZ_CTRL") delete nc[`${ex.target}-${s}`];
-        if (ex.type === "CZ_TGT") delete nc[`${ex.control}-${s}`];
-        if (ex.type === "SWAP_A") delete nc[`${ex.partner}-${s}`];
-        if (ex.type === "SWAP_B") delete nc[`${ex.partner}-${s}`];
+        if (ex.type === "CNOT_CTRL") delete nextCirc[`${ex.target}-${s}`];
+        if (ex.type === "CNOT_TGT") delete nextCirc[`${ex.control}-${s}`];
+        if (ex.type === "CZ_CTRL") delete nextCirc[`${ex.target}-${s}`];
+        if (ex.type === "CZ_TGT") delete nextCirc[`${ex.control}-${s}`];
+        if (ex.type === "SWAP_A") delete nextCirc[`${ex.partner}-${s}`];
+        if (ex.type === "SWAP_B") delete nextCirc[`${ex.partner}-${s}`];
 
-        setCirc(nc);
+        setCirc(nextCirc);
       }
 
       return;
@@ -108,15 +158,36 @@ export function useCircuitState() {
       const k = `${q}-${s}`;
       if (circ[k] || hasMeasurementInStep(s)) return;
 
-      // Set pending state for measurement, waiting for cbit selection
       setPending({ gate: "M", qubit: q, step: s });
+      return;
+    }
+
+    if (selGate === "IF") {
+      const k = `${q}-${s}`;
+      const ex = circ[k];
+      if (!ex || ex.type === "M") return;
+
+      const keys = getRelatedGateKeys(q, s, ex);
+      const existingValue = keys
+        .map((key) => circ[key]?.if?.value)
+        .find((value) => Number.isInteger(value));
+      const ifValue = Number.isInteger(existingValue) ? existingValue : 0;
+
+      setCirc(applyIfCondition(circ, keys, q, ifValue));
+      setPending({
+        gate: "IF",
+        qubit: q,
+        step: s,
+        keys,
+        inputValue: String(ifValue),
+      });
       return;
     }
 
     const gi = GATE_DEFS[selGate];
     if (!gi) return;
 
-    if (pending) {
+    if (pending && ["CNOT", "CZ", "SWAP"].includes(pending.gate)) {
       if (s !== pending.step || q === pending.qubit) {
         setPending(null);
         return;
@@ -129,20 +200,20 @@ export function useCircuitState() {
         return;
       }
 
-      const nc = { ...circ };
+      const nextCirc = { ...circ };
 
       if (pending.gate === "CNOT") {
-        nc[k1] = { type: "CNOT_CTRL", target: q };
-        nc[k2] = { type: "CNOT_TGT", control: pending.qubit };
+        nextCirc[k1] = { type: "CNOT_CTRL", target: q };
+        nextCirc[k2] = { type: "CNOT_TGT", control: pending.qubit };
       } else if (pending.gate === "CZ") {
-        nc[k1] = { type: "CZ_CTRL", target: q };
-        nc[k2] = { type: "CZ_TGT", control: pending.qubit };
+        nextCirc[k1] = { type: "CZ_CTRL", target: q };
+        nextCirc[k2] = { type: "CZ_TGT", control: pending.qubit };
       } else if (pending.gate === "SWAP") {
-        nc[k1] = { type: "SWAP_A", partner: q };
-        nc[k2] = { type: "SWAP_B", partner: pending.qubit };
+        nextCirc[k1] = { type: "SWAP_A", partner: q };
+        nextCirc[k2] = { type: "SWAP_B", partner: pending.qubit };
       }
 
-      setCirc(nc);
+      setCirc(nextCirc);
       setPending(null);
       return;
     }
@@ -159,7 +230,6 @@ export function useCircuitState() {
   };
 
   const handleCbitClick = (cbit) => {
-    // Only handle if there's a pending measurement
     if (!pending || pending.gate !== "M") {
       return;
     }
@@ -175,15 +245,41 @@ export function useCircuitState() {
     setPending(null);
   };
 
+  const handleIfInputChange = (value) => {
+    if (!pending || pending.gate !== "IF") return;
+    setPending({ ...pending, inputValue: value });
+  };
+
+  const applyPendingIf = () => {
+    if (!pending || pending.gate !== "IF") return false;
+
+    const value = Number.parseInt(pending.inputValue, 10);
+    const isValid =
+      /^\d+$/.test(pending.inputValue) &&
+      Number.isInteger(value) &&
+      value >= 0 &&
+      value <= maxIfValue;
+
+    if (!isValid) return false;
+
+    setCirc((prev) => applyIfCondition(prev, pending.keys, pending.qubit, value));
+    setPending(null);
+    return true;
+  };
+
+  const removePendingIf = () => {
+    if (!pending || pending.gate !== "IF") return;
+    setCirc((prev) => removeIfCondition(prev, pending.keys));
+    setPending(null);
+  };
+
   return {
-    // State
     nq,
     ns,
     circ,
     selGate,
     pending,
     hovered,
-    // Actions
     addQ,
     rmQ,
     addS,
@@ -192,6 +288,9 @@ export function useCircuitState() {
     selectGate,
     handleClick,
     handleCbitClick,
+    handleIfInputChange,
+    applyPendingIf,
+    removePendingIf,
     setHovered,
   };
 }

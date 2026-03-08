@@ -1,12 +1,39 @@
 import { useState } from "react";
 import { theme, secLbl } from "../utils.js";
-import { GATE_DEFS, SINGLE_QUBIT_GATES, MULTI_QUBIT_GATES } from "../gateDefinitions.js";
+import {
+  GATE_DEFS,
+  SINGLE_QUBIT_GATES,
+  MULTI_QUBIT_GATES,
+  OTHER_OPERATION_COLOR,
+  OTHER_OPERATION_BG,
+  OTHER_OPERATION_HOVER_BG,
+  OTHER_OPERATION_BORDER,
+} from "../gateDefinitions.js";
+
+export function renderGateLabel(label) {
+  if (typeof label === "string" && label.endsWith("†")) {
+    const base = label.slice(0, -1);
+    return (
+      <>
+        {base}
+        <sup style={{ fontSize: "0.6em", lineHeight: 0, position: "relative", top: "-0.25em" }}>
+          †
+        </sup>
+      </>
+    );
+  }
+
+  return label;
+}
 
 /**
  * Individual gate button in the palette
  */
 function GateButton({ gate, gateKey, selected, onClick, isMobile }) {
   const isMeasurement = gateKey === "M";
+  const isConditional = gateKey === "IF";
+  const isOtherOperation = isMeasurement || isConditional;
+  const isXGate = gateKey === "X";
   const [isHovered, setIsHovered] = useState(false);
 
   return (
@@ -20,10 +47,10 @@ function GateButton({ gate, gateKey, selected, onClick, isMobile }) {
               padding: "6px 10px",
               borderRadius: 8,
               border: selected
-                ? `2px solid ${isMeasurement ? theme.textMid : gate.color}`
+                ? `2px solid ${isOtherOperation ? OTHER_OPERATION_COLOR : gate.color}`
                 : `1px solid ${theme.borderLight}`,
-              background: selected ? (isMeasurement ? theme.hover : gate.bg) : theme.surface,
-              color: isMeasurement ? theme.textMid : gate.color,
+              background: selected ? (isOtherOperation ? theme.hover : gate.bg) : theme.surface,
+              color: isOtherOperation ? OTHER_OPERATION_COLOR : gate.color,
               cursor: "pointer",
               display: "flex",
               alignItems: "center",
@@ -38,14 +65,14 @@ function GateButton({ gate, gateKey, selected, onClick, isMobile }) {
               marginBottom: 3,
               borderRadius: 8,
               border: isHovered && !selected
-                ? `1px solid ${isMeasurement ? theme.textMid : gate.color}60`
+                ? `1px solid ${isOtherOperation ? OTHER_OPERATION_COLOR : gate.color}60`
                 : selected
-                ? `2px solid ${isMeasurement ? theme.textMid : gate.color}`
+                ? `2px solid ${isOtherOperation ? OTHER_OPERATION_COLOR : gate.color}`
                 : "1px solid transparent",
               background: selected
-                ? isMeasurement ? theme.hover : gate.bg
+                ? isOtherOperation ? theme.hover : gate.bg
                 : isHovered
-                ? `${isMeasurement ? theme.textMid : gate.color}15`
+                ? `${isOtherOperation ? OTHER_OPERATION_COLOR : gate.color}15`
                 : "transparent",
               color: theme.text,
               cursor: "pointer",
@@ -69,14 +96,40 @@ function GateButton({ gate, gateKey, selected, onClick, isMobile }) {
           fontWeight: 700,
           fontSize: isMobile ? 13 : 14,
           fontFamily: "'Source Code Pro',monospace",
-          background: isMeasurement ? (isHovered ? "#E2E8F0" : "#F1F5F9") : (isHovered ? `${gate.color}20` : gate.bg),
-          color: isMeasurement ? theme.textMid : gate.color,
+          background: isXGate
+            ? "transparent"
+            : isOtherOperation
+            ? (isHovered ? OTHER_OPERATION_HOVER_BG : OTHER_OPERATION_BG)
+            : (isHovered ? `${gate.color}20` : gate.bg),
+          color: isOtherOperation ? OTHER_OPERATION_COLOR : gate.color,
           flexShrink: 0,
-          border: `1.5px solid ${isMeasurement ? theme.border : gate.color}${isHovered ? "60" : "40"}`,
+          border: isXGate
+            ? "none"
+            : `1.5px solid ${isOtherOperation ? OTHER_OPERATION_BORDER : gate.color}${isHovered ? "60" : "40"}`,
           transition: "all 0.15s",
         }}
       >
-        {gate.label}
+        {isXGate ? (
+          <div
+            style={{
+              width: isMobile ? 24 : 28,
+              height: isMobile ? 24 : 28,
+              borderRadius: "50%",
+              background: gate.color,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              color: "#FFFFFF",
+              fontSize: isMobile ? 17 : 19,
+              fontWeight: 700,
+              lineHeight: 1,
+            }}
+          >
+            +
+          </div>
+        ) : (
+          renderGateLabel(gate.label)
+        )}
       </span>
       {!isMobile && (
         <span style={{ fontSize: 12, color: theme.textMid }}>{gate.desc}</span>
@@ -88,7 +141,7 @@ function GateButton({ gate, gateKey, selected, onClick, isMobile }) {
 /**
  * Usage instructions panel
  */
-function UsageInstructions() {
+function UsageInstructions({ expanded, onToggle }) {
   return (
     <div
       style={{
@@ -102,15 +155,38 @@ function UsageInstructions() {
         border: `1px solid ${theme.borderLight}`,
       }}
     >
-      <div style={{ fontWeight: 600, color: theme.text, marginBottom: 4, fontSize: 12 }}>
-        {"說明"} Instructions
-      </div>
-      <div>1. {"選擇下方操作"}</div>
-      <div>2. {"點擊電路格放置操作"}</div>
-      <div>3. {"未選擇操作時點擊電路格可刪除操作"}</div>
-      <div>
-        4. {"按"} <span style={{ color: theme.accent, fontWeight: 600 }}>{"▶"} Run</span> {"執行模擬"}
-      </div>
+      <button
+        onClick={onToggle}
+        style={{
+          width: "100%",
+          background: "transparent",
+          border: "none",
+          padding: 0,
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          cursor: "pointer",
+          color: theme.text,
+          fontWeight: 600,
+          fontSize: 12,
+          fontFamily: "inherit",
+          marginBottom: expanded ? 4 : 0,
+        }}
+      >
+        <span>{"說明"} Instructions</span>
+        <span style={{ color: theme.textLight, fontSize: 10 }}>{expanded ? "▲" : "▼"}</span>
+      </button>
+
+      {expanded && (
+        <>
+          <div>1. {"選擇下方操作"}</div>
+          <div>2. {"點擊電路格放置操作"}</div>
+          <div>3. {"未選擇操作時點擊電路格可刪除操作"}</div>
+          <div>
+            4. {"按"} <span style={{ color: theme.accent, fontWeight: 600 }}>{"▶"} Run</span> {"執行模擬"}
+          </div>
+        </>
+      )}
     </div>
   );
 }
@@ -119,9 +195,16 @@ function UsageInstructions() {
  * Gate palette component for selecting gates
  */
 export function GatePalette({ selGate, selectGate, pending, isMobile, showInstructions = true }) {
+  const [instructionsExpanded, setInstructionsExpanded] = useState(false);
+
   return (
     <>
-      {showInstructions && !isMobile && <UsageInstructions />}
+      {showInstructions && !isMobile && (
+        <UsageInstructions
+          expanded={instructionsExpanded}
+          onToggle={() => setInstructionsExpanded((v) => !v)}
+        />
+      )}
 
       <div style={{...secLbl, marginTop: showInstructions ? 16 : 0}}>Single-Qubit Gates</div>
 
@@ -163,24 +246,14 @@ export function GatePalette({ selGate, selectGate, pending, isMobile, showInstru
           onClick={() => selectGate("M")}
           isMobile={isMobile}
         />
+        <GateButton
+          gate={{ label: "if", desc: "Conditional" }}
+          gateKey="IF"
+          selected={selGate === "IF"}
+          onClick={() => selectGate("IF")}
+          isMobile={isMobile}
+        />
       </div>
-
-      {pending && pending.gate !== "M" && (
-        <div
-          style={{
-            marginTop: 10,
-            padding: 10,
-            background: "#FEF3C7",
-            border: "1px solid #F59E0B",
-            borderRadius: 8,
-            fontSize: 12,
-            color: "#92400E",
-            lineHeight: 1.5,
-          }}
-        >
-          請點擊同一 Step 的另一個 Qubit
-        </div>
-      )}
     </>
   );
 }

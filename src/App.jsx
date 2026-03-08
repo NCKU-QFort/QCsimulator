@@ -1,11 +1,11 @@
 import { useState } from "react";
 import { theme } from "./utils.js";
-import { GATE_DEFS } from "./gateDefinitions.js";
+import { GATE_DEFS, OTHER_OPERATION_COLOR, OTHER_OPERATION_BG, OTHER_OPERATION_BORDER } from "./gateDefinitions.js";
 import { useIsMobile } from "./hooks/useIsMobile.js";
 import { useCircuitState } from "./hooks/useCircuitState.js";
 import { useSimulation } from "./hooks/useSimulation.js";
 import { Header } from "./components/Header.jsx";
-import { GatePalette } from "./components/GatePalette.jsx";
+import { GatePalette, renderGateLabel } from "./components/GatePalette.jsx";
 import { CircuitGrid } from "./components/Circuit.jsx";
 import { ResultsPanel } from "./components/Results.jsx";
 
@@ -15,7 +15,7 @@ export default function App() {
   const [nc, setNc] = useState(2); // Number of classical bits
   const [shotsInput, setShotsInput] = useState("1000");
 
-  const circuitState = useCircuitState();
+  const circuitState = useCircuitState(nc);
   const {
     nq,
     ns,
@@ -31,6 +31,9 @@ export default function App() {
     selectGate,
     handleClick,
     handleCbitClick,
+    handleIfInputChange,
+    applyPendingIf,
+    removePendingIf,
     setHovered,
   } = circuitState;
 
@@ -52,10 +55,98 @@ export default function App() {
     run(Number(shotsInput));
   };
 
+  const selectedOperationMessage = selGate ? (
+    <>
+      <span
+        style={{
+          display: "inline-flex",
+          width: 22,
+          height: 22,
+          borderRadius: 4,
+          alignItems: "center",
+          justifyContent: "center",
+          fontWeight: 700,
+          fontSize: 12,
+          fontFamily: "'Source Code Pro',monospace",
+          background:
+            selGate === "X"
+              ? "transparent"
+              : selGate === "M" || selGate === "IF"
+              ? OTHER_OPERATION_BG
+              : GATE_DEFS[selGate]?.bg || "#F1F5F9",
+          color:
+            selGate === "M" || selGate === "IF"
+              ? OTHER_OPERATION_COLOR
+              : GATE_DEFS[selGate]?.color || theme.textMid,
+          marginRight: 6,
+          border:
+            selGate === "X"
+              ? "none"
+              : `1.5px solid ${
+                  selGate === "M"
+                    ? OTHER_OPERATION_BORDER
+                    : selGate === "IF"
+                    ? OTHER_OPERATION_BORDER
+                    : (GATE_DEFS[selGate]?.color || theme.border)
+                }40`,
+          verticalAlign: "middle",
+        }}
+      >
+        {selGate === "X" ? (
+          <div
+            style={{
+              width: 20,
+              height: 20,
+              borderRadius: "50%",
+              background: GATE_DEFS.X.color,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              color: "#FFFFFF",
+              fontSize: 15,
+              fontWeight: 700,
+              lineHeight: 1,
+            }}
+          >
+            +
+          </div>
+        ) : selGate === "M" ? (
+          "M"
+        ) : selGate === "IF" ? (
+          "if"
+        ) : (
+          renderGateLabel(GATE_DEFS[selGate]?.label || selGate)
+        )}
+      </span>
+      {selGate === "M"
+        ? "Measurement"
+        : selGate === "IF"
+        ? "Conditional"
+        : GATE_DEFS[selGate]?.desc || selGate}{" "}
+      selected
+    </>
+  ) : (
+    "Select Operation 選擇操作"
+  );
+
+  const isTwoQubitSelected = Boolean(selGate && GATE_DEFS[selGate] && GATE_DEFS[selGate].qubits === 2);
+  const isTwoQubitPendingSecond = Boolean(pending && isTwoQubitSelected && pending.gate === selGate);
+
+  let instructionMessage = "Click any operation in the circuit to remove it";
+  if (selGate === "IF") {
+    instructionMessage = "Choose a gate in the circuit";
+  } else if (selGate === "M" || (selGate && GATE_DEFS[selGate] && GATE_DEFS[selGate].qubits === 1)) {
+    instructionMessage = "Choose a position in the circuit to apply the operation";
+  } else if (isTwoQubitSelected && !isTwoQubitPendingSecond) {
+    instructionMessage = "Choose a position for the first qubit";
+  } else if (isTwoQubitPendingSecond) {
+    instructionMessage = "Choose the second qubit in the same step";
+  }
+
   return (
     <div
       style={{
-        minHeight: "100vh",
+        height: "100vh",
         background: theme.bg,
         color: theme.text,
         fontFamily: "'DM Sans','Segoe UI',sans-serif",
@@ -99,7 +190,8 @@ export default function App() {
             onClick={() => setShowPalette(!showPalette)}
             style={{
               width: "100%",
-              padding: "8px 12px",
+              height: 40,
+              padding: "0 12px",
               background: "transparent",
               border: "none",
               cursor: "pointer",
@@ -112,47 +204,16 @@ export default function App() {
               fontWeight: 500,
             }}
           >
-            <span>
-              {selGate ? (
-                <>
-                  <span
-                    style={{
-                      display: "inline-flex",
-                      width: 22,
-                      height: 22,
-                      borderRadius: 4,
-                      alignItems: "center",
-                      justifyContent: "center",
-                      fontWeight: 700,
-                      fontSize: 12,
-                      fontFamily: "'Source Code Pro',monospace",
-                      background:
-                        selGate === "M"
-                          ? "#F1F5F9"
-                          : GATE_DEFS[selGate]?.bg || "#F1F5F9",
-                      color:
-                        selGate === "M"
-                          ? theme.textMid
-                          : GATE_DEFS[selGate]?.color || theme.textMid,
-                      marginRight: 6,
-                      border: `1.5px solid ${
-                        selGate === "M"
-                          ? theme.border
-                          : (GATE_DEFS[selGate]?.color || theme.border)
-                      }40`,
-                      verticalAlign: "middle",
-                    }}
-                  >
-                    {selGate === "M" ? "M" : GATE_DEFS[selGate]?.label || selGate}
-                  </span>
-                  {selGate === "M"
-                    ? "Measurement"
-                    : GATE_DEFS[selGate]?.desc || selGate}{" "}
-                  selected
-                </>
-              ) : (
-                "Select Operation 選擇操作"
-              )}
+            <span
+              style={{
+                flex: 1,
+                minWidth: 0,
+                whiteSpace: "nowrap",
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+              }}
+            >
+              {selectedOperationMessage}
             </span>
 
             <span style={{ fontSize: 10, color: theme.textLight }}>
@@ -161,7 +222,15 @@ export default function App() {
           </button>
 
           {showPalette && (
-            <div style={{ padding: "8px 12px 12px", maxHeight: 200, overflowY: "auto" }}>
+            <div style={{ padding: "8px 12px 12px", maxHeight: 220, overflow: "hidden" }}>
+              <div
+                style={{
+                  maxHeight: 200,
+                  overflowY: "auto",
+                  overscrollBehavior: "contain",
+                  paddingRight: 2,
+                }}
+              >
               <GatePalette
                 selGate={selGate}
                 selectGate={selectGate}
@@ -169,24 +238,9 @@ export default function App() {
                 isMobile={isMobile}
                 showInstructions={false}
               />
+              </div>
             </div>
           )}
-        </div>
-      )}
-
-      {/* Mobile: Pending hint */}
-      {isMobile && pending && pending.gate !== "M" && (
-        <div
-          style={{
-            padding: "6px 12px",
-            background: "#FEF3C7",
-            borderBottom: "1px solid #F59E0B",
-            fontSize: 12,
-            color: "#92400E",
-            textAlign: "center",
-          }}
-        >
-          請點擊同一 Step 的另一個 Qubit
         </div>
       )}
 
@@ -200,21 +254,80 @@ export default function App() {
               padding: "16px 12px",
               background: theme.sidebar,
               flexShrink: 0,
-              overflowY: "auto",
+              overflow: "hidden",
+              display: "flex",
+              flexDirection: "column",
+              minHeight: 0,
             }}
           >
-            <GatePalette
-              selGate={selGate}
-              selectGate={selectGate}
-              pending={pending}
-              isMobile={isMobile}
-              showInstructions={true}
-            />
+            <div
+              style={{
+                flex: 1,
+                minHeight: 0,
+                overflowY: "auto",
+                overscrollBehavior: "contain",
+                paddingRight: 2,
+              }}
+            >
+              <GatePalette
+                selGate={selGate}
+                selectGate={selectGate}
+                pending={pending}
+                isMobile={isMobile}
+                showInstructions={true}
+              />
+            </div>
           </div>
         )}
 
         {/* Main Area */}
         <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden" }}>
+          {/* Desktop: selected operation message */}
+          {!isMobile && (
+            <div
+              style={{
+                borderBottom: `1px solid ${theme.border}`,
+                background: theme.sidebar,
+                height: 40,
+                padding: "0 12px",
+                display: "flex",
+                alignItems: "center",
+                fontSize: 13,
+                color: theme.text,
+                fontWeight: 500,
+                flexShrink: 0,
+                whiteSpace: "nowrap",
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+              }}
+            >
+              {selectedOperationMessage}
+            </div>
+          )}
+
+          <div
+            style={{
+              width: "100%",
+              height: 34,
+              padding: "0 12px",
+              background: "#FEF3C7",
+              borderBottom: "1px solid #F59E0B",
+              color: "#92400E",
+              textAlign: "left",
+              display: "flex",
+              alignItems: "center",
+              fontSize: 12,
+              fontWeight: 500,
+              flexShrink: 0,
+              whiteSpace: "nowrap",
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+            }}
+            title={instructionMessage}
+          >
+            {instructionMessage}
+          </div>
+
           {/* Circuit Grid */}
           <CircuitGrid
             nq={nq}
@@ -227,6 +340,9 @@ export default function App() {
             hovered={hovered}
             handleClick={handleClick}
             handleCbitClick={handleCbitClick}
+            handleIfInputChange={handleIfInputChange}
+            applyPendingIf={applyPendingIf}
+            removePendingIf={removePendingIf}
             setHovered={setHovered}
             isMobile={isMobile}
           />
