@@ -107,7 +107,7 @@ export default function App() {
   return (
     <div
       style={{
-        minHeight: "100vh",
+        height: "100vh",
         background: theme.bg,
         color: theme.text,
         fontFamily: "'DM Sans','Segoe UI',sans-serif",
@@ -183,7 +183,15 @@ export default function App() {
           </button>
 
           {showPalette && (
-            <div style={{ padding: "8px 12px 12px", maxHeight: 200, overflowY: "auto" }}>
+            <div style={{ padding: "8px 12px 12px", maxHeight: 220, overflow: "hidden" }}>
+              <div
+                style={{
+                  maxHeight: 200,
+                  overflowY: "auto",
+                  overscrollBehavior: "contain",
+                  paddingRight: 2,
+                }}
+              >
               <GatePalette
                 selGate={selGate}
                 selectGate={selectGate}
@@ -191,24 +199,9 @@ export default function App() {
                 isMobile={isMobile}
                 showInstructions={false}
               />
+              </div>
             </div>
           )}
-        </div>
-      )}
-
-      {/* Mobile: Pending hint */}
-      {isMobile && pending && ["CNOT", "CZ", "SWAP"].includes(pending.gate) && (
-        <div
-          style={{
-            padding: "6px 12px",
-            background: "#FEF3C7",
-            borderBottom: "1px solid #F59E0B",
-            fontSize: 12,
-            color: "#92400E",
-            textAlign: "center",
-          }}
-        >
-          請點擊同一 Step 的另一個 Qubit
         </div>
       )}
 
@@ -222,16 +215,29 @@ export default function App() {
               padding: "16px 12px",
               background: theme.sidebar,
               flexShrink: 0,
-              overflowY: "auto",
+              overflow: "hidden",
+              display: "flex",
+              flexDirection: "column",
+              minHeight: 0,
             }}
           >
-            <GatePalette
-              selGate={selGate}
-              selectGate={selectGate}
-              pending={pending}
-              isMobile={isMobile}
-              showInstructions={true}
-            />
+            <div
+              style={{
+                flex: 1,
+                minHeight: 0,
+                overflowY: "auto",
+                overscrollBehavior: "contain",
+                paddingRight: 2,
+              }}
+            >
+              <GatePalette
+                selGate={selGate}
+                selectGate={selectGate}
+                pending={pending}
+                isMobile={isMobile}
+                showInstructions={true}
+              />
+            </div>
           </div>
         )}
 

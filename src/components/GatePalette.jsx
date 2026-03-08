@@ -114,7 +114,7 @@ function GateButton({ gate, gateKey, selected, onClick, isMobile }) {
 /**
  * Usage instructions panel
  */
-function UsageInstructions() {
+function UsageInstructions({ expanded, onToggle }) {
   return (
     <div
       style={{
@@ -128,15 +128,38 @@ function UsageInstructions() {
         border: `1px solid ${theme.borderLight}`,
       }}
     >
-      <div style={{ fontWeight: 600, color: theme.text, marginBottom: 4, fontSize: 12 }}>
-        {"說明"} Instructions
-      </div>
-      <div>1. {"選擇下方操作"}</div>
-      <div>2. {"點擊電路格放置操作"}</div>
-      <div>3. {"未選擇操作時點擊電路格可刪除操作"}</div>
-      <div>
-        4. {"按"} <span style={{ color: theme.accent, fontWeight: 600 }}>{"▶"} Run</span> {"執行模擬"}
-      </div>
+      <button
+        onClick={onToggle}
+        style={{
+          width: "100%",
+          background: "transparent",
+          border: "none",
+          padding: 0,
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          cursor: "pointer",
+          color: theme.text,
+          fontWeight: 600,
+          fontSize: 12,
+          fontFamily: "inherit",
+          marginBottom: expanded ? 4 : 0,
+        }}
+      >
+        <span>{"說明"} Instructions</span>
+        <span style={{ color: theme.textLight, fontSize: 10 }}>{expanded ? "▲" : "▼"}</span>
+      </button>
+
+      {expanded && (
+        <>
+          <div>1. {"選擇下方操作"}</div>
+          <div>2. {"點擊電路格放置操作"}</div>
+          <div>3. {"未選擇操作時點擊電路格可刪除操作"}</div>
+          <div>
+            4. {"按"} <span style={{ color: theme.accent, fontWeight: 600 }}>{"▶"} Run</span> {"執行模擬"}
+          </div>
+        </>
+      )}
     </div>
   );
 }
@@ -145,9 +168,16 @@ function UsageInstructions() {
  * Gate palette component for selecting gates
  */
 export function GatePalette({ selGate, selectGate, pending, isMobile, showInstructions = true }) {
+  const [instructionsExpanded, setInstructionsExpanded] = useState(false);
+
   return (
     <>
-      {showInstructions && !isMobile && <UsageInstructions />}
+      {showInstructions && !isMobile && (
+        <UsageInstructions
+          expanded={instructionsExpanded}
+          onToggle={() => setInstructionsExpanded((v) => !v)}
+        />
+      )}
 
       <div style={{...secLbl, marginTop: showInstructions ? 16 : 0}}>Single-Qubit Gates</div>
 
@@ -197,23 +227,6 @@ export function GatePalette({ selGate, selectGate, pending, isMobile, showInstru
           isMobile={isMobile}
         />
       </div>
-
-      {pending && ["CNOT", "CZ", "SWAP"].includes(pending.gate) && (
-        <div
-          style={{
-            marginTop: 10,
-            padding: 10,
-            background: "#FEF3C7",
-            border: "1px solid #F59E0B",
-            borderRadius: 8,
-            fontSize: 12,
-            color: "#92400E",
-            lineHeight: 1.5,
-          }}
-        >
-          請點擊同一 Step 的另一個 Qubit
-        </div>
-      )}
     </>
   );
 }
