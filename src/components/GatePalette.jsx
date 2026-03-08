@@ -7,6 +7,8 @@ import { GATE_DEFS, SINGLE_QUBIT_GATES, MULTI_QUBIT_GATES } from "../gateDefinit
  */
 function GateButton({ gate, gateKey, selected, onClick, isMobile }) {
   const isMeasurement = gateKey === "M";
+  const isConditional = gateKey === "IF";
+  const isGrayOperation = isMeasurement || isConditional;
   const [isHovered, setIsHovered] = useState(false);
 
   return (
@@ -20,10 +22,10 @@ function GateButton({ gate, gateKey, selected, onClick, isMobile }) {
               padding: "6px 10px",
               borderRadius: 8,
               border: selected
-                ? `2px solid ${isMeasurement ? theme.textMid : gate.color}`
+                ? `2px solid ${isGrayOperation ? theme.textMid : gate.color}`
                 : `1px solid ${theme.borderLight}`,
-              background: selected ? (isMeasurement ? theme.hover : gate.bg) : theme.surface,
-              color: isMeasurement ? theme.textMid : gate.color,
+              background: selected ? (isGrayOperation ? theme.hover : gate.bg) : theme.surface,
+              color: isGrayOperation ? theme.textMid : gate.color,
               cursor: "pointer",
               display: "flex",
               alignItems: "center",
@@ -38,14 +40,14 @@ function GateButton({ gate, gateKey, selected, onClick, isMobile }) {
               marginBottom: 3,
               borderRadius: 8,
               border: isHovered && !selected
-                ? `1px solid ${isMeasurement ? theme.textMid : gate.color}60`
+                ? `1px solid ${isGrayOperation ? theme.textMid : gate.color}60`
                 : selected
-                ? `2px solid ${isMeasurement ? theme.textMid : gate.color}`
+                ? `2px solid ${isGrayOperation ? theme.textMid : gate.color}`
                 : "1px solid transparent",
               background: selected
-                ? isMeasurement ? theme.hover : gate.bg
+                ? isGrayOperation ? theme.hover : gate.bg
                 : isHovered
-                ? `${isMeasurement ? theme.textMid : gate.color}15`
+                ? `${isGrayOperation ? theme.textMid : gate.color}15`
                 : "transparent",
               color: theme.text,
               cursor: "pointer",
@@ -69,10 +71,10 @@ function GateButton({ gate, gateKey, selected, onClick, isMobile }) {
           fontWeight: 700,
           fontSize: isMobile ? 13 : 14,
           fontFamily: "'Source Code Pro',monospace",
-          background: isMeasurement ? (isHovered ? "#E2E8F0" : "#F1F5F9") : (isHovered ? `${gate.color}20` : gate.bg),
-          color: isMeasurement ? theme.textMid : gate.color,
+          background: isGrayOperation ? (isHovered ? "#E2E8F0" : "#F1F5F9") : (isHovered ? `${gate.color}20` : gate.bg),
+          color: isGrayOperation ? theme.textMid : gate.color,
           flexShrink: 0,
-          border: `1.5px solid ${isMeasurement ? theme.border : gate.color}${isHovered ? "60" : "40"}`,
+          border: `1.5px solid ${isGrayOperation ? theme.border : gate.color}${isHovered ? "60" : "40"}`,
           transition: "all 0.15s",
         }}
       >
@@ -163,9 +165,16 @@ export function GatePalette({ selGate, selectGate, pending, isMobile, showInstru
           onClick={() => selectGate("M")}
           isMobile={isMobile}
         />
+        <GateButton
+          gate={{ label: "if", desc: "Conditional" }}
+          gateKey="IF"
+          selected={selGate === "IF"}
+          onClick={() => selectGate("IF")}
+          isMobile={isMobile}
+        />
       </div>
 
-      {pending && pending.gate !== "M" && (
+      {pending && ["CNOT", "CZ", "SWAP"].includes(pending.gate) && (
         <div
           style={{
             marginTop: 10,

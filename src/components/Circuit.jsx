@@ -130,6 +130,10 @@ function GateCell({ q, s, circ, selGate, pending, hovered, handleClick, setHover
   const gate = circ[`${q}-${s}`];
   const isHovered = hovered && hovered.q === q && hovered.s === s;
   const hasGate = Boolean(gate);
+  const hasIfCondition = gate && gate.if && Number.isInteger(gate.if.value);
+  const isIfAnchor = hasIfCondition && gate.if.anchor === q;
+  const isIfApplicableGate = hasGate && gate.type !== "M";
+  const canAttachIf = selGate === "IF" && isIfApplicableGate;
   const isMeasurementStepOccupied =
     selGate === "M" &&
     Object.entries(circ).some(([key, value]) => {
@@ -137,10 +141,16 @@ function GateCell({ q, s, circ, selGate, pending, hovered, handleClick, setHover
       const step = Number.parseInt(key.split("-")[1], 10);
       return step === s;
     });
-  const canPlace = selGate && !hasGate && !(selGate === "M" && isMeasurementStepOccupied);
-  const isPendingTarget = pending && pending.step === s && pending.qubit !== q && !hasGate;
+  const canPlace = selGate && selGate !== "IF" && !hasGate && !(selGate === "M" && isMeasurementStepOccupied);
+  const isPendingTarget =
+    pending &&
+    ["CNOT", "CZ", "SWAP"].includes(pending.gate) &&
+    pending.step === s &&
+    pending.qubit !== q &&
+    !hasGate;
   const isPendingSource =
     pending &&
+    ["CNOT", "CZ", "SWAP"].includes(pending.gate) &&
     pending.step === s &&
     pending.qubit === q &&
     !hasGate &&
@@ -163,11 +173,11 @@ function GateCell({ q, s, circ, selGate, pending, hovered, handleClick, setHover
         justifyContent: "center",
         position: "relative",
         zIndex: 1,
-        cursor: canPlace || isPendingTarget || (!selGate && hasGate) ? "pointer" : "default",
+        cursor: canPlace || isPendingTarget || (!selGate && hasGate) || canAttachIf ? "pointer" : "default",
         background:
           showPendingTargetPreview
             ? "#3B82F612"
-            : isHovered && (canPlace || (!selGate && hasGate))
+            : isHovered && (canPlace || (!selGate && hasGate) || canAttachIf)
               ? theme.hover
               : "transparent",
         borderRadius: 5,
@@ -175,6 +185,26 @@ function GateCell({ q, s, circ, selGate, pending, hovered, handleClick, setHover
       }}
     >
       <GateRenderer gate={gate} isMobile={isMobile} />
+
+      {isIfAnchor && (
+        <div
+          style={{
+            position: "absolute",
+            top: isMobile ? 6 : 7,
+            right: isMobile ? 7 : 8,
+            fontSize: isMobile ? 8 : 9,
+            fontWeight: 700,
+            color: "#666",
+            background: "#F1F5F9",
+            border: "1px solid #CBD5E1",
+            borderRadius: 4,
+            padding: "0px 3px",
+            lineHeight: 1.2,
+          }}
+        >
+          if
+        </div>
+      )}
 
       {/* Preview for single-qubit gate */}
       {!hasGate &&
@@ -611,6 +641,126 @@ function CbitSelector({ nc, nq, pending, handleCbitClick, isMobile, CH, CW, LBL_
 }
 
 /**
+ * Editor for classical-if condition value
+ */
+function IfConditionEditor({
+  nc,
+  nq,
+  pending,
+  handleIfInputChange,
+  applyPendingIf,
+  removePendingIf,
+  isMobile,
+  CH,
+  CW,
+  LBL_W,
+}) {
+  if (!pending || pending.gate !== "IF") return null;
+
+  const left = LBL_W + 5 + (pending.step - 1) * CW + CW / 2;
+  const top = nq * CH + (isMobile ? 12 : 16) + CH + 10;
+  const maxIfValue = (1 << Math.max(1, nc)) - 1;
+  const input = pending.inputValue ?? "";
+  const parsed = Number.parseInt(input, 10);
+  const isValid = /^\d+$/.test(input) && Number.isInteger(parsed) && parsed >= 0 && parsed <= maxIfValue;
+
+  return (
+    <div
+      style={{
+        position: "absolute",
+        left,
+        top,
+        transform: "translateX(-50%)",
+        background: theme.surface,
+        border: `2px solid ${isValid ? "#94A3B8" : "#DC2626"}`,
+        borderRadius: 8,
+        padding: isMobile ? "8px 10px" : "10px 12px",
+        boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
+        zIndex: 110,
+        minWidth: isMobile ? 110 : 124,
+      }}
+    >
+      <div
+        style={{
+          fontSize: isMobile ? 10 : 11,
+          fontWeight: 600,
+          color: theme.text,
+          marginBottom: 8,
+          textAlign: "center",
+        }}
+      >
+        if condition (decimal)
+      </div>
+
+      <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 8 }}>
+        <span
+          style={{
+            fontSize: 12,
+            color: "#666",
+            fontFamily: "'Source Code Pro', monospace",
+            fontWeight: 700,
+            minWidth: 16,
+            textAlign: "center",
+          }}
+        >
+          ==
+        </span>
+        <input
+          value={input}
+          onChange={(e) => handleIfInputChange(e.target.value)}
+          style={{
+            width: isMobile ? 56 : 64,
+            padding: isMobile ? "5px 7px" : "6px 8px",
+            borderRadius: 5,
+            border: `1.5px solid ${isValid ? "#94A3B8" : "#DC2626"}`,
+            outline: "none",
+            fontFamily: "'Source Code Pro', monospace",
+            fontSize: isMobile ? 11 : 12,
+            color: theme.text,
+            background: isValid ? theme.bg : "#FEF2F2",
+          }}
+        />
+      </div>
+
+      <div style={{ display: "flex", gap: 6 }}>
+        <button
+          onClick={() => applyPendingIf()}
+          style={{
+            flex: 1,
+            padding: "5px 8px",
+            borderRadius: 5,
+            border: "1px solid #94A3B8",
+            background: isValid ? "#F1F5F9" : "#F8FAFC",
+            color: isValid ? "#334155" : "#94A3B8",
+            cursor: isValid ? "pointer" : "not-allowed",
+            fontSize: 11,
+            fontWeight: 600,
+          }}
+        >
+          Apply
+        </button>
+        <button
+          onClick={removePendingIf}
+          style={{
+            flex: 1,
+            padding: "5px 8px",
+            borderRadius: 5,
+            border: "1px solid #CBD5E1",
+            background: "#F8FAFC",
+            color: "#64748B",
+            cursor: "pointer",
+            fontSize: 11,
+            fontWeight: 600,
+          }}
+        >
+          Remove
+        </button>
+      </div>
+    </div>
+  );
+}
+
+/**
  * Get all connections (control lines) for a given step
  */
 function getConnections(circ, nq, step) {
@@ -653,6 +803,29 @@ function getMeasurementConnections(circ, nq, step) {
 }
 
 /**
+ * Get all IF connections (from gate to classical wire) for a given step
+ */
+function getIfConnections(circ, nq, step) {
+  const ifConnections = [];
+
+  for (let q = 0; q < nq; q++) {
+    const g = circ[`${q}-${step}`];
+
+    if (
+      g &&
+      g.type !== "M" &&
+      g.if &&
+      Number.isInteger(g.if.value) &&
+      g.if.anchor === q
+    ) {
+      ifConnections.push({ qubit: q, value: g.if.value, color: "#888" });
+    }
+  }
+
+  return ifConnections;
+}
+
+/**
  * Renders vertical connection lines between qubits
  */
 function ConnectionLines({ circ, nq, nc, ns, pending, hovered, isMobile, CH, CW, LBL_W }) {
@@ -660,6 +833,8 @@ function ConnectionLines({ circ, nq, nc, ns, pending, hovered, isMobile, CH, CW,
   const measurementStartOffset = measurementGateSize / 2;
   const classicalSeparatorHeight = isMobile ? 12 : 16;
   const measurementArrowHeight = 9;
+  const ifGateSize = isMobile ? 36 : 42;
+  const ifStartOffset = ifGateSize / 2;
 
   return (
     <>
@@ -739,6 +914,68 @@ function ConnectionLines({ circ, nq, nc, ns, pending, hovered, isMobile, CH, CW,
         });
       })}
 
+      {/* IF connections from gates to classical wire */}
+      {Array.from({ length: ns }, (_, stepIndex) => {
+        const step = stepIndex + 1;
+        const ifConnections = getIfConnections(circ, nq, step);
+
+        return ifConnections.map((c, ci) => {
+          const top = c.qubit * CH + CH / 2 + ifStartOffset;
+          const classicalY = nq * CH + classicalSeparatorHeight + CH / 2;
+          const centerX = LBL_W + 5 + (step - 1) * CW + CW / 2;
+
+          return (
+            <React.Fragment key={`if-${step}-${ci}`}>
+              <div
+                style={{
+                  position: "absolute",
+                  left: centerX - 1,
+                  top,
+                  width: 2,
+                  height: Math.max(0, classicalY - top),
+                  background: c.color,
+                  zIndex: 2,
+                  pointerEvents: "none",
+                }}
+              />
+              <div
+                style={{
+                  position: "absolute",
+                  left: centerX - 4,
+                  top: classicalY - 4,
+                  width: 8,
+                  height: 8,
+                  borderRadius: "50%",
+                  background: c.color,
+                  zIndex: 4,
+                  pointerEvents: "none",
+                }}
+              />
+              <div
+                style={{
+                  position: "absolute",
+                  left: centerX,
+                  top: classicalY + 7,
+                  transform: "translateX(-50%)",
+                  fontSize: isMobile ? 9 : 10,
+                  fontWeight: 700,
+                  fontFamily: "'Source Code Pro', monospace",
+                  color: c.color,
+                  background: "#FFFFFFEE",
+                  border: "1px solid #CBD5E1",
+                  borderRadius: 4,
+                  padding: "0px 4px",
+                  zIndex: 4,
+                  pointerEvents: "none",
+                }}
+              >
+                == {c.value}
+              </div>
+            </React.Fragment>
+          );
+        });
+      })}
+
       {/* Pending measurement connection (dashed) */}
       {pending && pending.gate === "M" && (() => {
         const top = pending.qubit * CH + CH / 2 + measurementStartOffset;
@@ -783,6 +1020,7 @@ function ConnectionLines({ circ, nq, nc, ns, pending, hovered, isMobile, CH, CW,
 
       {/* Preview connection for pending multi-qubit gate */}
       {pending &&
+        ["CNOT", "CZ", "SWAP"].includes(pending.gate) &&
         hovered &&
         hovered.s === pending.step &&
         typeof hovered.q === "number" &&
@@ -815,7 +1053,23 @@ function ConnectionLines({ circ, nq, nc, ns, pending, hovered, isMobile, CH, CW,
 /**
  * Main circuit grid component
  */
-export function CircuitGrid({ nq, nc, ns, circ, cbits, selGate, pending, hovered, handleClick, handleCbitClick, setHovered, isMobile }) {
+export function CircuitGrid({
+  nq,
+  nc,
+  ns,
+  circ,
+  cbits,
+  selGate,
+  pending,
+  hovered,
+  handleClick,
+  handleCbitClick,
+  handleIfInputChange,
+  applyPendingIf,
+  removePendingIf,
+  setHovered,
+  isMobile,
+}) {
   const CH = isMobile ? 48 : 58;
   const CW = isMobile ? 48 : 58;
   const LBL_W = isMobile ? 50 : 63;
@@ -896,6 +1150,19 @@ export function CircuitGrid({ nq, nc, ns, circ, cbits, selGate, pending, hovered
             nq={nq}
             pending={pending}
             handleCbitClick={handleCbitClick}
+            isMobile={isMobile}
+            CH={CH}
+            CW={CW}
+            LBL_W={LBL_W}
+          />
+
+          <IfConditionEditor
+            nc={nc}
+            nq={nq}
+            pending={pending}
+            handleIfInputChange={handleIfInputChange}
+            applyPendingIf={applyPendingIf}
+            removePendingIf={removePendingIf}
             isMobile={isMobile}
             CH={CH}
             CW={CW}

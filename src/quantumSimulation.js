@@ -4,6 +4,23 @@ import { GATE_DEFS } from "./gateDefinitions.js";
 // Measurement error probability: 1% chance to flip 0→1 or 1→0
 const MEASUREMENT_ERROR_RATE = 0.01;
 
+function classicalRegisterValue(cbits, nc) {
+  // Decimal value follows c_(n-1) ... c_1 c_0 ordering.
+  // Example for nc=3: value bits are [c2 c1 c0].
+  // Unmeasured bits stay at initialized value 0.
+
+  let value = 0;
+  for (let c = nc - 1; c >= 0; c--) {
+    value = (value << 1) | (cbits[c] === 1 ? 1 : 0);
+  }
+  return value;
+}
+
+function passesIfCondition(gate, cbits, nc) {
+  if (!gate || !gate.if || !Number.isInteger(gate.if.value)) return true;
+  return classicalRegisterValue(cbits, nc) === gate.if.value;
+}
+
 /**
  * Apply a single-qubit gate to the quantum state
  * @param {Array} st - Current state vector
@@ -168,6 +185,12 @@ export function runSim(nq, nc, circ, ns) {
 
       const g = circ[k];
       if (!g) continue;
+
+      const isMeasurement = g.type === "M";
+      if (!isMeasurement && !passesIfCondition(g, cbits, nc)) {
+        pr.add(k);
+        continue;
+      }
 
       if (g.type === "M" && g.cbit !== undefined) {
         // Perform measurement

@@ -15,7 +15,7 @@ export default function App() {
   const [nc, setNc] = useState(2); // Number of classical bits
   const [shotsInput, setShotsInput] = useState("1000");
 
-  const circuitState = useCircuitState();
+  const circuitState = useCircuitState(nc);
   const {
     nq,
     ns,
@@ -31,6 +31,9 @@ export default function App() {
     selectGate,
     handleClick,
     handleCbitClick,
+    handleIfInputChange,
+    applyPendingIf,
+    removePendingIf,
     setHovered,
   } = circuitState;
 
@@ -127,26 +130,30 @@ export default function App() {
                       fontSize: 12,
                       fontFamily: "'Source Code Pro',monospace",
                       background:
-                        selGate === "M"
+                        selGate === "M" || selGate === "IF"
                           ? "#F1F5F9"
                           : GATE_DEFS[selGate]?.bg || "#F1F5F9",
                       color:
-                        selGate === "M"
+                        selGate === "M" || selGate === "IF"
                           ? theme.textMid
                           : GATE_DEFS[selGate]?.color || theme.textMid,
                       marginRight: 6,
                       border: `1.5px solid ${
                         selGate === "M"
                           ? theme.border
+                          : selGate === "IF"
+                          ? theme.border
                           : (GATE_DEFS[selGate]?.color || theme.border)
                       }40`,
                       verticalAlign: "middle",
                     }}
                   >
-                    {selGate === "M" ? "M" : GATE_DEFS[selGate]?.label || selGate}
+                    {selGate === "M" ? "M" : selGate === "IF" ? "if" : GATE_DEFS[selGate]?.label || selGate}
                   </span>
                   {selGate === "M"
                     ? "Measurement"
+                    : selGate === "IF"
+                    ? "Conditional"
                     : GATE_DEFS[selGate]?.desc || selGate}{" "}
                   selected
                 </>
@@ -175,7 +182,7 @@ export default function App() {
       )}
 
       {/* Mobile: Pending hint */}
-      {isMobile && pending && pending.gate !== "M" && (
+      {isMobile && pending && ["CNOT", "CZ", "SWAP"].includes(pending.gate) && (
         <div
           style={{
             padding: "6px 12px",
@@ -227,6 +234,9 @@ export default function App() {
             hovered={hovered}
             handleClick={handleClick}
             handleCbitClick={handleCbitClick}
+            handleIfInputChange={handleIfInputChange}
+            applyPendingIf={applyPendingIf}
+            removePendingIf={removePendingIf}
             setHovered={setHovered}
             isMobile={isMobile}
           />

@@ -66,7 +66,8 @@ export function useSimulation(nq, nc, circ, ns) {
       if (cbitCounts) {
         let cbitIndex = 0;
 
-        for (let c = 0; c < nc; c++) {
+        // Bitstring label order is c_(n-1) ... c_0, so build index in that order.
+        for (let c = nc - 1; c >= 0; c--) {
           const bit = measuredCbits?.[c] === 1 ? 1 : 0;
           cbitIndex = (cbitIndex << 1) | bit;
         }
