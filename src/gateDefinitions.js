@@ -1,8 +1,9 @@
 const S2 = 1 / Math.sqrt(2);
+const HALF = 0.5;
 
 // Gate categories for UI display
 // note that the order of gates in these arrays determines their order in the palette
-export const SINGLE_QUBIT_GATES = ["H", "X", "I", "Z", "S", "Sdg", "T", "Tdg", "Y"];
+export const SINGLE_QUBIT_GATES = ["H", "X", "I", "Z", "S", "Sdg", "T", "Tdg", "SX", "SXdg", "Y"];
 export const MULTI_QUBIT_GATES = ["CNOT", "SWAP", "CZ"];
 
 // Reusable operation category colors
@@ -73,6 +74,40 @@ export const GATE_DEFS = {
     color: LOGICAL_GATE_COLOR,
     bg: LOGICAL_GATE_BG,
     desc: "Pauli-X",
+    qubits: 1,
+  },
+  SX: {
+    matrix: [
+      [
+        [HALF,  HALF],  // (1 + i)/2
+        [HALF, -HALF],  // (1 - i)/2
+      ],
+      [
+        [HALF, -HALF],  // (1 - i)/2
+        [HALF,  HALF],  // (1 + i)/2
+      ],
+    ],
+    label: "√X",
+    color: OTHER_GATE_COLOR,
+    bg: OTHER_GATE_BG,
+    desc: "SX",
+    qubits: 1,
+  },
+  SXdg: {
+    matrix: [
+      [
+        [HALF, -HALF],  // (1 - i)/2
+        [HALF,  HALF],  // (1 + i)/2
+      ],
+      [
+        [HALF,  HALF],  // (1 + i)/2
+        [HALF, -HALF],  // (1 - i)/2
+      ],
+    ],
+    label: "√X†",
+    color: OTHER_GATE_COLOR,
+    bg: OTHER_GATE_BG,
+    desc: "SXdg",
     qubits: 1,
   },
   Y: {
