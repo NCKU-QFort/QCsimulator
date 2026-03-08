@@ -8,6 +8,29 @@ import {
 } from "../gateDefinitions.js";
 import { renderGateLabel } from "./GatePalette.jsx";
 
+function PlusCircle({ size, color, preview = false }) {
+  return (
+    <div
+      style={{
+        width: size,
+        height: size,
+        borderRadius: "50%",
+        background: preview ? `${color}88` : color,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        color: "#FFFFFF",
+        fontSize: size * 0.72,
+        lineHeight: 1,
+        fontWeight: 700,
+        boxShadow: preview ? "none" : "0 1px 3px rgba(0,0,0,0.08)",
+      }}
+    >
+      +
+    </div>
+  );
+}
+
 /**
  * Renders a quantum gate visual representation
  */
@@ -32,37 +55,11 @@ function GateRenderer({ gate, isMobile }) {
   }
 
   if (t === "CNOT_TGT") {
-    return (
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          color: GATE_DEFS.CNOT.color,
-          fontSize: 24,
-          fontWeight: "bold",
-        }}
-      >
-        {"⊕"}
-      </div>
-    );
+    return <PlusCircle size={sz} color={GATE_DEFS.CNOT.color} />;
   }
 
   if (t === "X") {
-    return (
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          color: GATE_DEFS.CNOT.color,
-          fontSize: 24,
-          fontWeight: "bold",
-        }}
-      >
-        {"⊕"}
-      </div>
-    );
+    return <PlusCircle size={sz} color={GATE_DEFS.X.color} />;
   }
 
   if (t === "CZ_CTRL" || t === "CZ_TGT") {
@@ -237,18 +234,7 @@ function GateCell({ q, s, circ, selGate, pending, hovered, handleClick, setHover
         GATE_DEFS[selGate] &&
         GATE_DEFS[selGate].qubits === 1 && (
           selGate === "X" ? (
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                color: `${GATE_DEFS.CNOT.color}80`,
-                fontSize: 24,
-                fontWeight: "bold",
-              }}
-            >
-              {"⊕"}
-            </div>
+            <PlusCircle size={isMobile ? 36 : 42} color={GATE_DEFS.X.color} preview />
           ) : (
             <div
               style={{
@@ -409,20 +395,7 @@ function GateCell({ q, s, circ, selGate, pending, hovered, handleClick, setHover
         const gateColor = GATE_DEFS[gateType].color;
         
         if (gateType === "CNOT") {
-          return (
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                color: `${gateColor}80`,
-                fontSize: 24,
-                fontWeight: "bold",
-              }}
-            >
-              {"⊕"}
-            </div>
-          );
+          return <PlusCircle size={isMobile ? 36 : 42} color={gateColor} preview />;
         } else if (gateType === "CZ") {
           return (
             <div
@@ -808,15 +781,15 @@ function getConnections(circ, nq, step) {
     const g = circ[`${q}-${step}`];
 
     if (g && g.type === "CNOT_CTRL") {
-      connections.push({ from: q, to: g.target, color: GATE_DEFS.CNOT.color });
+      connections.push({ from: q, to: g.target, color: GATE_DEFS.CNOT.color, type: "CNOT" });
     }
 
     if (g && g.type === "CZ_CTRL") {
-      connections.push({ from: q, to: g.target, color: GATE_DEFS.CZ.color });
+      connections.push({ from: q, to: g.target, color: GATE_DEFS.CZ.color, type: "CZ" });
     }
 
     if (g && g.type === "SWAP_A") {
-      connections.push({ from: q, to: g.partner, color: GATE_DEFS.SWAP.color });
+      connections.push({ from: q, to: g.partner, color: GATE_DEFS.SWAP.color, type: "SWAP" });
     }
   }
 
@@ -873,6 +846,7 @@ function ConnectionLines({ circ, nq, nc, ns, pending, hovered, isMobile, CH, CW,
   const measurementArrowHeight = 9;
   const ifGateSize = isMobile ? 36 : 42;
   const ifStartOffset = ifGateSize / 2;
+  const cnotTargetRadius = (isMobile ? 36 : 42) / 2;
 
   return (
     <>
@@ -882,15 +856,22 @@ function ConnectionLines({ circ, nq, nc, ns, pending, hovered, isMobile, CH, CW,
         const connections = getConnections(circ, nq, step);
 
         return connections.map((c, ci) => {
-          const top = Math.min(c.from, c.to) * CH + CH / 2;
-          const bottom = Math.max(c.from, c.to) * CH + CH / 2;
+          const fromY = c.from * CH + CH / 2;
+          let toY = c.to * CH + CH / 2;
+
+          if (c.type === "CNOT") {
+            toY += c.to > c.from ? -cnotTargetRadius : cnotTargetRadius;
+          }
+
+          const top = Math.min(fromY, toY);
+          const bottom = Math.max(fromY, toY);
 
           return (
             <div
               key={`${step}-${ci}`}
               style={{
                 position: "absolute",
-                left: LBL_W + 5 + (step - 1) * CW + CW / 2 - 1,
+                left: LBL_W + 5 + (step - 1) * CW + CW / 2 - 1.25,
                 top,
                 width: 2.5,
                 height: bottom - top,
@@ -922,9 +903,9 @@ function ConnectionLines({ circ, nq, nc, ns, pending, hovered, isMobile, CH, CW,
               <div
                 style={{
                   position: "absolute",
-                  left: centerX - 1,
+                  left: centerX,
                   top,
-                  width: 2.5,
+                  width: 0,
                   height: Math.max(0, bottom - top - measurementArrowHeight),
                   background: "transparent",
                   borderLeft: `2.5px dashed ${m.color}`,
@@ -1027,9 +1008,9 @@ function ConnectionLines({ circ, nq, nc, ns, pending, hovered, isMobile, CH, CW,
             <div
               style={{
                 position: "absolute",
-                left: centerX - 1,
+                left: centerX,
                 top,
-                width: 2.5,
+                width: 0,
                 height: Math.max(0, bottom - top - measurementArrowHeight),
                 background: "transparent",
                 borderLeft: `2.5px dashed ${grayColor}`,
@@ -1064,15 +1045,20 @@ function ConnectionLines({ circ, nq, nc, ns, pending, hovered, isMobile, CH, CW,
         typeof hovered.q === "number" &&
         hovered.q !== pending.qubit &&
         (() => {
-          const top = Math.min(pending.qubit, hovered.q) * CH + CH / 2;
-          const bottom = Math.max(pending.qubit, hovered.q) * CH + CH / 2;
+          const fromY = pending.qubit * CH + CH / 2;
+          let toY = hovered.q * CH + CH / 2;
+          if (pending.gate === "CNOT") {
+            toY += hovered.q > pending.qubit ? -cnotTargetRadius : cnotTargetRadius;
+          }
+          const top = Math.min(fromY, toY);
+          const bottom = Math.max(fromY, toY);
           const gateColor = GATE_DEFS[pending.gate] ? GATE_DEFS[pending.gate].color : "#666";
 
           return (
             <div
               style={{
                 position: "absolute",
-                left: LBL_W + 5 + (pending.step - 1) * CW + CW / 2 - 1,
+                left: LBL_W + 5 + (pending.step - 1) * CW + CW / 2 - 1.25,
                 top,
                 width: 2.5,
                 height: bottom - top,

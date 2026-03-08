@@ -69,7 +69,9 @@ export default function App() {
           fontSize: 12,
           fontFamily: "'Source Code Pro',monospace",
           background:
-            selGate === "M" || selGate === "IF"
+            selGate === "X"
+              ? "transparent"
+              : selGate === "M" || selGate === "IF"
               ? OTHER_OPERATION_BG
               : GATE_DEFS[selGate]?.bg || "#F1F5F9",
           color:
@@ -77,21 +79,44 @@ export default function App() {
               ? OTHER_OPERATION_COLOR
               : GATE_DEFS[selGate]?.color || theme.textMid,
           marginRight: 6,
-          border: `1.5px solid ${
-            selGate === "M"
-              ? OTHER_OPERATION_BORDER
-              : selGate === "IF"
-              ? OTHER_OPERATION_BORDER
-              : (GATE_DEFS[selGate]?.color || theme.border)
-          }40`,
+          border:
+            selGate === "X"
+              ? "none"
+              : `1.5px solid ${
+                  selGate === "M"
+                    ? OTHER_OPERATION_BORDER
+                    : selGate === "IF"
+                    ? OTHER_OPERATION_BORDER
+                    : (GATE_DEFS[selGate]?.color || theme.border)
+                }40`,
           verticalAlign: "middle",
         }}
       >
-        {selGate === "M"
-          ? "M"
-          : selGate === "IF"
-          ? "if"
-          : renderGateLabel(GATE_DEFS[selGate]?.label || selGate)}
+        {selGate === "X" ? (
+          <div
+            style={{
+              width: 20,
+              height: 20,
+              borderRadius: "50%",
+              background: GATE_DEFS.X.color,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              color: "#FFFFFF",
+              fontSize: 15,
+              fontWeight: 700,
+              lineHeight: 1,
+            }}
+          >
+            +
+          </div>
+        ) : selGate === "M" ? (
+          "M"
+        ) : selGate === "IF" ? (
+          "if"
+        ) : (
+          renderGateLabel(GATE_DEFS[selGate]?.label || selGate)
+        )}
       </span>
       {selGate === "M"
         ? "Measurement"

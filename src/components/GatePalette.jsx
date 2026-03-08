@@ -33,6 +33,7 @@ function GateButton({ gate, gateKey, selected, onClick, isMobile }) {
   const isMeasurement = gateKey === "M";
   const isConditional = gateKey === "IF";
   const isOtherOperation = isMeasurement || isConditional;
+  const isXGate = gateKey === "X";
   const [isHovered, setIsHovered] = useState(false);
 
   return (
@@ -95,14 +96,40 @@ function GateButton({ gate, gateKey, selected, onClick, isMobile }) {
           fontWeight: 700,
           fontSize: isMobile ? 13 : 14,
           fontFamily: "'Source Code Pro',monospace",
-          background: isOtherOperation ? (isHovered ? OTHER_OPERATION_HOVER_BG : OTHER_OPERATION_BG) : (isHovered ? `${gate.color}20` : gate.bg),
+          background: isXGate
+            ? "transparent"
+            : isOtherOperation
+            ? (isHovered ? OTHER_OPERATION_HOVER_BG : OTHER_OPERATION_BG)
+            : (isHovered ? `${gate.color}20` : gate.bg),
           color: isOtherOperation ? OTHER_OPERATION_COLOR : gate.color,
           flexShrink: 0,
-          border: `1.5px solid ${isOtherOperation ? OTHER_OPERATION_BORDER : gate.color}${isHovered ? "60" : "40"}`,
+          border: isXGate
+            ? "none"
+            : `1.5px solid ${isOtherOperation ? OTHER_OPERATION_BORDER : gate.color}${isHovered ? "60" : "40"}`,
           transition: "all 0.15s",
         }}
       >
-        {renderGateLabel(gate.label)}
+        {isXGate ? (
+          <div
+            style={{
+              width: isMobile ? 24 : 28,
+              height: isMobile ? 24 : 28,
+              borderRadius: "50%",
+              background: gate.color,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              color: "#FFFFFF",
+              fontSize: isMobile ? 17 : 19,
+              fontWeight: 700,
+              lineHeight: 1,
+            }}
+          >
+            +
+          </div>
+        ) : (
+          renderGateLabel(gate.label)
+        )}
       </span>
       {!isMobile && (
         <span style={{ fontSize: 12, color: theme.textMid }}>{gate.desc}</span>
