@@ -55,6 +55,55 @@ export default function App() {
     run(Number(shotsInput));
   };
 
+  const selectedOperationMessage = selGate ? (
+    <>
+      <span
+        style={{
+          display: "inline-flex",
+          width: 22,
+          height: 22,
+          borderRadius: 4,
+          alignItems: "center",
+          justifyContent: "center",
+          fontWeight: 700,
+          fontSize: 12,
+          fontFamily: "'Source Code Pro',monospace",
+          background:
+            selGate === "M" || selGate === "IF"
+              ? OTHER_OPERATION_BG
+              : GATE_DEFS[selGate]?.bg || "#F1F5F9",
+          color:
+            selGate === "M" || selGate === "IF"
+              ? OTHER_OPERATION_COLOR
+              : GATE_DEFS[selGate]?.color || theme.textMid,
+          marginRight: 6,
+          border: `1.5px solid ${
+            selGate === "M"
+              ? OTHER_OPERATION_BORDER
+              : selGate === "IF"
+              ? OTHER_OPERATION_BORDER
+              : (GATE_DEFS[selGate]?.color || theme.border)
+          }40`,
+          verticalAlign: "middle",
+        }}
+      >
+        {selGate === "M"
+          ? "M"
+          : selGate === "IF"
+          ? "if"
+          : renderGateLabel(GATE_DEFS[selGate]?.label || selGate)}
+      </span>
+      {selGate === "M"
+        ? "Measurement"
+        : selGate === "IF"
+        ? "Conditional"
+        : GATE_DEFS[selGate]?.desc || selGate}{" "}
+      selected
+    </>
+  ) : (
+    "Select Operation 選擇操作"
+  );
+
   return (
     <div
       style={{
@@ -102,7 +151,8 @@ export default function App() {
             onClick={() => setShowPalette(!showPalette)}
             style={{
               width: "100%",
-              padding: "8px 12px",
+              height: 40,
+              padding: "0 12px",
               background: "transparent",
               border: "none",
               cursor: "pointer",
@@ -115,55 +165,16 @@ export default function App() {
               fontWeight: 500,
             }}
           >
-            <span>
-              {selGate ? (
-                <>
-                  <span
-                    style={{
-                      display: "inline-flex",
-                      width: 22,
-                      height: 22,
-                      borderRadius: 4,
-                      alignItems: "center",
-                      justifyContent: "center",
-                      fontWeight: 700,
-                      fontSize: 12,
-                      fontFamily: "'Source Code Pro',monospace",
-                      background:
-                        selGate === "M" || selGate === "IF"
-                          ? OTHER_OPERATION_BG
-                          : GATE_DEFS[selGate]?.bg || "#F1F5F9",
-                      color:
-                        selGate === "M" || selGate === "IF"
-                          ? OTHER_OPERATION_COLOR
-                          : GATE_DEFS[selGate]?.color || theme.textMid,
-                      marginRight: 6,
-                      border: `1.5px solid ${
-                        selGate === "M"
-                          ? OTHER_OPERATION_BORDER
-                          : selGate === "IF"
-                          ? OTHER_OPERATION_BORDER
-                          : (GATE_DEFS[selGate]?.color || theme.border)
-                      }40`,
-                      verticalAlign: "middle",
-                    }}
-                  >
-                    {selGate === "M"
-                      ? "M"
-                      : selGate === "IF"
-                      ? "if"
-                      : renderGateLabel(GATE_DEFS[selGate]?.label || selGate)}
-                  </span>
-                  {selGate === "M"
-                    ? "Measurement"
-                    : selGate === "IF"
-                    ? "Conditional"
-                    : GATE_DEFS[selGate]?.desc || selGate}{" "}
-                  selected
-                </>
-              ) : (
-                "Select Operation 選擇操作"
-              )}
+            <span
+              style={{
+                flex: 1,
+                minWidth: 0,
+                whiteSpace: "nowrap",
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+              }}
+            >
+              {selectedOperationMessage}
             </span>
 
             <span style={{ fontSize: 10, color: theme.textLight }}>
@@ -226,6 +237,29 @@ export default function App() {
 
         {/* Main Area */}
         <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden" }}>
+          {/* Desktop: selected operation message */}
+          {!isMobile && (
+            <div
+              style={{
+                borderBottom: `1px solid ${theme.border}`,
+                background: theme.sidebar,
+                height: 40,
+                padding: "0 12px",
+                display: "flex",
+                alignItems: "center",
+                fontSize: 13,
+                color: theme.text,
+                fontWeight: 500,
+                flexShrink: 0,
+                whiteSpace: "nowrap",
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+              }}
+            >
+              {selectedOperationMessage}
+            </div>
+          )}
+
           {/* Circuit Grid */}
           <CircuitGrid
             nq={nq}
