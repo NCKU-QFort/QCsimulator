@@ -1,6 +1,14 @@
 import { useState } from "react";
 import { theme, secLbl } from "../utils.js";
-import { GATE_DEFS, SINGLE_QUBIT_GATES, MULTI_QUBIT_GATES } from "../gateDefinitions.js";
+import {
+  GATE_DEFS,
+  SINGLE_QUBIT_GATES,
+  MULTI_QUBIT_GATES,
+  OTHER_OPERATION_COLOR,
+  OTHER_OPERATION_BG,
+  OTHER_OPERATION_HOVER_BG,
+  OTHER_OPERATION_BORDER,
+} from "../gateDefinitions.js";
 
 /**
  * Individual gate button in the palette
@@ -8,7 +16,7 @@ import { GATE_DEFS, SINGLE_QUBIT_GATES, MULTI_QUBIT_GATES } from "../gateDefinit
 function GateButton({ gate, gateKey, selected, onClick, isMobile }) {
   const isMeasurement = gateKey === "M";
   const isConditional = gateKey === "IF";
-  const isGrayOperation = isMeasurement || isConditional;
+  const isOtherOperation = isMeasurement || isConditional;
   const [isHovered, setIsHovered] = useState(false);
 
   return (
@@ -22,10 +30,10 @@ function GateButton({ gate, gateKey, selected, onClick, isMobile }) {
               padding: "6px 10px",
               borderRadius: 8,
               border: selected
-                ? `2px solid ${isGrayOperation ? theme.textMid : gate.color}`
+                ? `2px solid ${isOtherOperation ? OTHER_OPERATION_COLOR : gate.color}`
                 : `1px solid ${theme.borderLight}`,
-              background: selected ? (isGrayOperation ? theme.hover : gate.bg) : theme.surface,
-              color: isGrayOperation ? theme.textMid : gate.color,
+              background: selected ? (isOtherOperation ? theme.hover : gate.bg) : theme.surface,
+              color: isOtherOperation ? OTHER_OPERATION_COLOR : gate.color,
               cursor: "pointer",
               display: "flex",
               alignItems: "center",
@@ -40,14 +48,14 @@ function GateButton({ gate, gateKey, selected, onClick, isMobile }) {
               marginBottom: 3,
               borderRadius: 8,
               border: isHovered && !selected
-                ? `1px solid ${isGrayOperation ? theme.textMid : gate.color}60`
+                ? `1px solid ${isOtherOperation ? OTHER_OPERATION_COLOR : gate.color}60`
                 : selected
-                ? `2px solid ${isGrayOperation ? theme.textMid : gate.color}`
+                ? `2px solid ${isOtherOperation ? OTHER_OPERATION_COLOR : gate.color}`
                 : "1px solid transparent",
               background: selected
-                ? isGrayOperation ? theme.hover : gate.bg
+                ? isOtherOperation ? theme.hover : gate.bg
                 : isHovered
-                ? `${isGrayOperation ? theme.textMid : gate.color}15`
+                ? `${isOtherOperation ? OTHER_OPERATION_COLOR : gate.color}15`
                 : "transparent",
               color: theme.text,
               cursor: "pointer",
@@ -71,10 +79,10 @@ function GateButton({ gate, gateKey, selected, onClick, isMobile }) {
           fontWeight: 700,
           fontSize: isMobile ? 13 : 14,
           fontFamily: "'Source Code Pro',monospace",
-          background: isGrayOperation ? (isHovered ? "#E2E8F0" : "#F1F5F9") : (isHovered ? `${gate.color}20` : gate.bg),
-          color: isGrayOperation ? theme.textMid : gate.color,
+          background: isOtherOperation ? (isHovered ? OTHER_OPERATION_HOVER_BG : OTHER_OPERATION_BG) : (isHovered ? `${gate.color}20` : gate.bg),
+          color: isOtherOperation ? OTHER_OPERATION_COLOR : gate.color,
           flexShrink: 0,
-          border: `1.5px solid ${isGrayOperation ? theme.border : gate.color}${isHovered ? "60" : "40"}`,
+          border: `1.5px solid ${isOtherOperation ? OTHER_OPERATION_BORDER : gate.color}${isHovered ? "60" : "40"}`,
           transition: "all 0.15s",
         }}
       >

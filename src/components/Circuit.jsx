@@ -1,6 +1,11 @@
 import React from "react";
 import { theme } from "../utils.js";
-import { GATE_DEFS } from "../gateDefinitions.js";
+import {
+  GATE_DEFS,
+  OTHER_OPERATION_COLOR,
+  OTHER_OPERATION_BG,
+  OTHER_OPERATION_BORDER,
+} from "../gateDefinitions.js";
 
 /**
  * Renders a quantum gate visual representation
@@ -26,6 +31,23 @@ function GateRenderer({ gate, isMobile }) {
   }
 
   if (t === "CNOT_TGT") {
+    return (
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          color: GATE_DEFS.CNOT.color,
+          fontSize: 24,
+          fontWeight: "bold",
+        }}
+      >
+        {"⊕"}
+      </div>
+    );
+  }
+
+  if (t === "X") {
     return (
       <div
         style={{
@@ -213,23 +235,38 @@ function GateCell({ q, s, circ, selGate, pending, hovered, handleClick, setHover
         !pending &&
         GATE_DEFS[selGate] &&
         GATE_DEFS[selGate].qubits === 1 && (
-          <div
-            style={{
-              width: isMobile ? 36 : 42,
-              height: isMobile ? 36 : 42,
-              borderRadius: 7,
-              border: `2px dashed ${GATE_DEFS[selGate].color}50`,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              color: `${GATE_DEFS[selGate].color}50`,
-              fontWeight: 700,
-              fontSize: isMobile ? 13 : 16,
-              fontFamily: "'Source Code Pro',monospace",
-            }}
-          >
-            {GATE_DEFS[selGate].label}
-          </div>
+          selGate === "X" ? (
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                color: `${GATE_DEFS.CNOT.color}80`,
+                fontSize: 24,
+                fontWeight: "bold",
+              }}
+            >
+              {"⊕"}
+            </div>
+          ) : (
+            <div
+              style={{
+                width: isMobile ? 36 : 42,
+                height: isMobile ? 36 : 42,
+                borderRadius: 7,
+                border: `2px dashed ${GATE_DEFS[selGate].color}50`,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                color: `${GATE_DEFS[selGate].color}50`,
+                fontWeight: 700,
+                fontSize: isMobile ? 13 : 16,
+                fontFamily: "'Source Code Pro',monospace",
+              }}
+            >
+              {GATE_DEFS[selGate].label}
+            </div>
+          )
         )}
 
       {/* Preview for multi-qubit gate control/first qubit */}
@@ -475,7 +512,7 @@ function QubitWire({ q, ns, circ, selGate, pending, hovered, handleClick, setHov
  * A single classical bit wire (row) in the circuit
  */
 function ClassicalBitWire({ nc, nq, ns, circ, cbits, isMobile, CH, CW, LBL_W }) {
-  const measurementColor = "#888";
+  const measurementColor = OTHER_OPERATION_COLOR;
 
   return (
     <div style={{ display: "flex", alignItems: "center", height: CH }}>
@@ -571,7 +608,7 @@ function CbitSelector({ nc, nq, pending, handleCbitClick, isMobile, CH, CW, LBL_
 
   const left = LBL_W + 5 + (pending.step - 1) * CW;
   const top = pending.qubit * CH + CH + 10;
-  const grayColor = "#888";
+  const grayColor = OTHER_OPERATION_COLOR;
 
   return (
     <div
@@ -818,7 +855,7 @@ function getIfConnections(circ, nq, step) {
       Number.isInteger(g.if.value) &&
       g.if.anchor === q
     ) {
-      ifConnections.push({ qubit: q, value: g.if.value, color: "#888" });
+      ifConnections.push({ qubit: q, value: g.if.value, color: OTHER_OPERATION_COLOR });
     }
   }
 
@@ -961,8 +998,8 @@ function ConnectionLines({ circ, nq, nc, ns, pending, hovered, isMobile, CH, CW,
                   fontWeight: 700,
                   fontFamily: "'Source Code Pro', monospace",
                   color: c.color,
-                  background: "#FFFFFFEE",
-                  border: "1px solid #CBD5E1",
+                  background: `${OTHER_OPERATION_BG}EE`,
+                  border: `1px solid ${OTHER_OPERATION_BORDER}`,
                   borderRadius: 4,
                   padding: "0px 4px",
                   zIndex: 4,
@@ -981,7 +1018,7 @@ function ConnectionLines({ circ, nq, nc, ns, pending, hovered, isMobile, CH, CW,
         const top = pending.qubit * CH + CH / 2 + measurementStartOffset;
         const bottom = nq * CH + classicalSeparatorHeight + CH / 2;
         const centerX = LBL_W + 5 + (pending.step - 1) * CW + CW / 2;
-        const grayColor = "#888";
+        const grayColor = OTHER_OPERATION_COLOR;
 
         return (
           <>

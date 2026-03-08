@@ -1,8 +1,27 @@
 const S2 = 1 / Math.sqrt(2);
 
 // Gate categories for UI display
-export const SINGLE_QUBIT_GATES = ["I", "H", "X", "Y", "Z", "S", "T"];
-export const MULTI_QUBIT_GATES = ["CNOT", "CZ", "SWAP"];
+// note that the order of gates in these arrays determines their order in the palette
+export const SINGLE_QUBIT_GATES = ["H", "X", "I", "Z", "S", "T", "Y"];
+export const MULTI_QUBIT_GATES = ["CNOT", "SWAP", "CZ"];
+
+// Reusable operation category colors
+export const OTHER_OPERATION_COLOR = "#888";
+export const OTHER_OPERATION_BG = "#F1F5F9";
+export const OTHER_OPERATION_HOVER_BG = "#E2E8F0";
+export const OTHER_OPERATION_BORDER = "#CBD5E1";
+
+export const PHASE_GATE_COLOR = "#0D9488";
+export const PHASE_GATE_BG = "#F0FDFA";
+
+export const HADAMARD_GATE_COLOR = "#DC2626";
+export const HADAMARD_GATE_BG = "#FEF2F2";
+
+export const LOGICAL_GATE_COLOR = "#2563EB";
+export const LOGICAL_GATE_BG = "#EFF6FF";
+
+export const OTHER_GATE_COLOR = "#7C3AED";
+export const OTHER_GATE_BG = "#F5F3FF";
 
 export const GATE_DEFS = {
   I: {
@@ -17,8 +36,8 @@ export const GATE_DEFS = {
       ],
     ],
     label: "I",
-    color: "#94A3B8",
-    bg: "#F1F5F9",
+    color: LOGICAL_GATE_COLOR,
+    bg: LOGICAL_GATE_BG,
     desc: "Identity",
     qubits: 1,
   },
@@ -34,8 +53,8 @@ export const GATE_DEFS = {
       ],
     ],
     label: "H",
-    color: "#D97706",
-    bg: "#FFFBEB",
+    color: HADAMARD_GATE_COLOR,
+    bg: HADAMARD_GATE_BG,
     desc: "Hadamard",
     qubits: 1,
   },
@@ -50,9 +69,9 @@ export const GATE_DEFS = {
         [0, 0], // 0 + 0i = 0
       ],
     ],
-    label: "X",
-    color: "#DC2626",
-    bg: "#FEF2F2",
+    label: "⊕",
+    color: LOGICAL_GATE_COLOR,
+    bg: LOGICAL_GATE_BG,
     desc: "Pauli-X",
     qubits: 1,
   },
@@ -68,8 +87,8 @@ export const GATE_DEFS = {
       ],
     ],
     label: "Y",
-    color: "#059669",
-    bg: "#ECFDF5",
+    color: OTHER_GATE_COLOR,
+    bg: OTHER_GATE_BG,
     desc: "Pauli-Y",
     qubits: 1,
   },
@@ -85,8 +104,8 @@ export const GATE_DEFS = {
       ],
     ],
     label: "Z",
-    color: "#2563EB",
-    bg: "#EFF6FF",
+    color: PHASE_GATE_COLOR,
+    bg: PHASE_GATE_BG,
     desc: "Pauli-Z",
     qubits: 1,
   },
@@ -102,8 +121,8 @@ export const GATE_DEFS = {
       ],
     ],
     label: "S",
-    color: "#7C3AED",
-    bg: "#F5F3FF",
+    color: PHASE_GATE_COLOR,
+    bg: PHASE_GATE_BG,
     desc: "Phase(S)",
     qubits: 1,
   },
@@ -119,29 +138,29 @@ export const GATE_DEFS = {
       ],
     ],
     label: "T",
-    color: "#0D9488",
-    bg: "#F0FDFA",
+    color: PHASE_GATE_COLOR,
+    bg: PHASE_GATE_BG,
     desc: "π/8",
     qubits: 1,
   },
   CNOT: {
     label: "CX",
-    color: "#DC2626",
-    bg: "#FEF2F2",
+    color: LOGICAL_GATE_COLOR,
+    bg: LOGICAL_GATE_BG,
     desc: "CNOT",
     qubits: 2,
   },
   CZ: {
     label: "CZ",
-    color: "#2563EB",
-    bg: "#EFF6FF",
+    color: PHASE_GATE_COLOR,
+    bg: PHASE_GATE_BG,
     desc: "CZ",
     qubits: 2,
   },
   SWAP: {
     label: "SW",
-    color: "#D97706",
-    bg: "#FFFBEB",
+    color: LOGICAL_GATE_COLOR,
+    bg: LOGICAL_GATE_BG,
     desc: "SWAP",
     qubits: 2,
   },

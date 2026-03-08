@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { theme } from "./utils.js";
-import { GATE_DEFS } from "./gateDefinitions.js";
+import { GATE_DEFS, OTHER_OPERATION_COLOR, OTHER_OPERATION_BG, OTHER_OPERATION_BORDER } from "./gateDefinitions.js";
 import { useIsMobile } from "./hooks/useIsMobile.js";
 import { useCircuitState } from "./hooks/useCircuitState.js";
 import { useSimulation } from "./hooks/useSimulation.js";
@@ -131,18 +131,18 @@ export default function App() {
                       fontFamily: "'Source Code Pro',monospace",
                       background:
                         selGate === "M" || selGate === "IF"
-                          ? "#F1F5F9"
+                          ? OTHER_OPERATION_BG
                           : GATE_DEFS[selGate]?.bg || "#F1F5F9",
                       color:
                         selGate === "M" || selGate === "IF"
-                          ? theme.textMid
+                          ? OTHER_OPERATION_COLOR
                           : GATE_DEFS[selGate]?.color || theme.textMid,
                       marginRight: 6,
                       border: `1.5px solid ${
                         selGate === "M"
-                          ? theme.border
+                          ? OTHER_OPERATION_BORDER
                           : selGate === "IF"
-                          ? theme.border
+                          ? OTHER_OPERATION_BORDER
                           : (GATE_DEFS[selGate]?.color || theme.border)
                       }40`,
                       verticalAlign: "middle",
