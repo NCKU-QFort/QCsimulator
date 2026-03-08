@@ -2,7 +2,7 @@ const S2 = 1 / Math.sqrt(2);
 
 // Gate categories for UI display
 // note that the order of gates in these arrays determines their order in the palette
-export const SINGLE_QUBIT_GATES = ["H", "X", "I", "Z", "S", "T", "Y"];
+export const SINGLE_QUBIT_GATES = ["H", "X", "I", "Z", "S", "Sdg", "T", "Tdg", "Y"];
 export const MULTI_QUBIT_GATES = ["CNOT", "SWAP", "CZ"];
 
 // Reusable operation category colors
@@ -123,7 +123,24 @@ export const GATE_DEFS = {
     label: "S",
     color: PHASE_GATE_COLOR,
     bg: PHASE_GATE_BG,
-    desc: "Phase(S)",
+    desc: "Phase(π/2)",
+    qubits: 1,
+  },
+  Sdg: {
+    matrix: [
+      [
+        [1, 0], // 1 + 0i = 1
+        [0, 0], // 0 + 0i = 0
+      ],
+      [
+        [0, 0],  // 0 + 0i =  0
+        [0, -1], // 0 - 1i = -i
+      ],
+    ],
+    label: "S†",
+    color: PHASE_GATE_COLOR,
+    bg: PHASE_GATE_BG,
+    desc: "Phase(-π/2)",
     qubits: 1,
   },
   T: {
@@ -134,13 +151,30 @@ export const GATE_DEFS = {
       ],
       [
         [0, 0], // 0 + 0i = 0
-        [Math.cos(Math.PI / 4), Math.sin(Math.PI / 4)], // cos(π/4) + i*sin(π/4)
+        [Math.cos(Math.PI / 4), Math.sin(Math.PI / 4)], // exp(iπ/4) = cos(π/4) + i*sin(π/4)
       ],
     ],
     label: "T",
     color: PHASE_GATE_COLOR,
     bg: PHASE_GATE_BG,
-    desc: "π/8",
+    desc: "Phase(π/4)",
+    qubits: 1,
+  },
+  Tdg: {
+    matrix: [
+      [
+        [1, 0], // 1 + 0i = 1
+        [0, 0], // 0 + 0i = 0
+      ],
+      [
+        [0, 0], // 0 + 0i = 0
+        [Math.cos(Math.PI / 4), -Math.sin(Math.PI / 4)], // cos(π/4) - i*sin(π/4)
+      ],
+    ],
+    label: "T†",
+    color: PHASE_GATE_COLOR,
+    bg: PHASE_GATE_BG,
+    desc: "Phase(-π/4)",
     qubits: 1,
   },
   CNOT: {

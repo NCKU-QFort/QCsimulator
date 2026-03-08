@@ -5,7 +5,7 @@ import { useIsMobile } from "./hooks/useIsMobile.js";
 import { useCircuitState } from "./hooks/useCircuitState.js";
 import { useSimulation } from "./hooks/useSimulation.js";
 import { Header } from "./components/Header.jsx";
-import { GatePalette } from "./components/GatePalette.jsx";
+import { GatePalette, renderGateLabel } from "./components/GatePalette.jsx";
 import { CircuitGrid } from "./components/Circuit.jsx";
 import { ResultsPanel } from "./components/Results.jsx";
 
@@ -148,7 +148,11 @@ export default function App() {
                       verticalAlign: "middle",
                     }}
                   >
-                    {selGate === "M" ? "M" : selGate === "IF" ? "if" : GATE_DEFS[selGate]?.label || selGate}
+                    {selGate === "M"
+                      ? "M"
+                      : selGate === "IF"
+                      ? "if"
+                      : renderGateLabel(GATE_DEFS[selGate]?.label || selGate)}
                   </span>
                   {selGate === "M"
                     ? "Measurement"

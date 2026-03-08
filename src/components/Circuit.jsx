@@ -6,6 +6,7 @@ import {
   OTHER_OPERATION_BG,
   OTHER_OPERATION_BORDER,
 } from "../gateDefinitions.js";
+import { renderGateLabel } from "./GatePalette.jsx";
 
 /**
  * Renders a quantum gate visual representation
@@ -140,7 +141,7 @@ function GateRenderer({ gate, isMobile }) {
         boxShadow: "0 1px 3px rgba(0,0,0,0.06)",
       }}
     >
-      {def.label}
+      {renderGateLabel(def.label)}
     </div>
   );
 }
@@ -264,7 +265,7 @@ function GateCell({ q, s, circ, selGate, pending, hovered, handleClick, setHover
                 fontFamily: "'Source Code Pro',monospace",
               }}
             >
-              {GATE_DEFS[selGate].label}
+              {renderGateLabel(GATE_DEFS[selGate].label)}
             </div>
           )
         )}

@@ -10,6 +10,22 @@ import {
   OTHER_OPERATION_BORDER,
 } from "../gateDefinitions.js";
 
+export function renderGateLabel(label) {
+  if (typeof label === "string" && label.endsWith("†")) {
+    const base = label.slice(0, -1);
+    return (
+      <>
+        {base}
+        <sup style={{ fontSize: "0.6em", lineHeight: 0, position: "relative", top: "-0.25em" }}>
+          †
+        </sup>
+      </>
+    );
+  }
+
+  return label;
+}
+
 /**
  * Individual gate button in the palette
  */
@@ -86,7 +102,7 @@ function GateButton({ gate, gateKey, selected, onClick, isMobile }) {
           transition: "all 0.15s",
         }}
       >
-        {gate.label}
+        {renderGateLabel(gate.label)}
       </span>
       {!isMobile && (
         <span style={{ fontSize: 12, color: theme.textMid }}>{gate.desc}</span>
