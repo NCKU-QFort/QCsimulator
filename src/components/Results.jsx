@@ -1,5 +1,5 @@
 import { Bar, BarChart, Cell, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
-import { theme, cAbs2, basisLabelKet } from "../utils.js";
+import { theme, cAbs2, basisLabelKet, monospaceFontFamily } from "../utils.js";
 
 /**
  * Probability bar chart component
@@ -14,7 +14,7 @@ function ProbabilityChart({ chartData, nq, isMobile, shotsExecuted }) {
             tick={{
               fontSize: nq > 4 ? 8 : isMobile ? 9 : 11,
               fill: theme.textMid,
-              fontFamily: "'Source Code Pro',monospace",
+              fontFamily: monospaceFontFamily,
             }}
             interval={0}
             angle={nq > 4 ? -45 : 0}
@@ -33,7 +33,7 @@ function ProbabilityChart({ chartData, nq, isMobile, shotsExecuted }) {
               border: `1px solid ${theme.border}`,
               borderRadius: 6,
               fontSize: 11,
-              fontFamily: "'Source Code Pro',monospace",
+              fontFamily: monospaceFontFamily,
               boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
             }}
             formatter={(v, name, props) => {
@@ -74,7 +74,7 @@ function StateVector({ sv, nq, isMobile }) {
         borderRadius: 6,
         maxHeight: isMobile ? 100 : 130,
         overflowY: "auto",
-        fontFamily: "'Source Code Pro',monospace",
+        fontFamily: monospaceFontFamily,
         fontSize: isMobile ? 10 : 12,
         border: `1px solid ${theme.borderLight}`,
       }}

@@ -1,13 +1,15 @@
 import { useState } from "react";
-import { theme } from "./utils.js";
+import { theme, monospaceFontFamily } from "./utils.js";
 import { GATE_DEFS, OTHER_OPERATION_COLOR, OTHER_OPERATION_BG, OTHER_OPERATION_BORDER } from "./gateDefinitions.js";
 import { useIsMobile } from "./hooks/useIsMobile.js";
 import { useCircuitState } from "./hooks/useCircuitState.js";
 import { useSimulation } from "./hooks/useSimulation.js";
 import { Header } from "./components/Header.jsx";
-import { GatePalette, renderGateLabel } from "./components/GatePalette.jsx";
+import { GatePalette } from "./components/GatePalette.jsx";
+import { renderGateLabel } from "./components/CircuitHelpers.jsx";
 import { CircuitGrid } from "./components/Circuit.jsx";
 import { ResultsPanel } from "./components/Results.jsx";
+import { PlusCircle } from "./components/CircuitHelpers.jsx";
 
 export default function App() {
   const isMobile = useIsMobile();
@@ -67,7 +69,7 @@ export default function App() {
           justifyContent: "center",
           fontWeight: 700,
           fontSize: 12,
-          fontFamily: "'Source Code Pro',monospace",
+          fontFamily: monospaceFontFamily,
           background:
             selGate === "X"
               ? "transparent"
@@ -93,23 +95,7 @@ export default function App() {
         }}
       >
         {selGate === "X" ? (
-          <div
-            style={{
-              width: 20,
-              height: 20,
-              borderRadius: "50%",
-              background: GATE_DEFS.X.color,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              color: "#FFFFFF",
-              fontSize: 15,
-              fontWeight: 700,
-              lineHeight: 1,
-            }}
-          >
-            +
-          </div>
+          <PlusCircle size={20} color={GATE_DEFS.X.color} />
         ) : selGate === "M" ? (
           "M"
         ) : selGate === "IF" ? (
@@ -134,7 +120,7 @@ export default function App() {
 
   let instructionMessage = "Click any operation in the circuit to remove it";
   if (selGate === "IF") {
-    instructionMessage = "Choose a gate in the circuit";
+    instructionMessage = "Choose a gate in the circuit to modify if-condition";
   } else if (selGate === "M" || (selGate && GATE_DEFS[selGate] && GATE_DEFS[selGate].qubits === 1)) {
     instructionMessage = "Choose a position in the circuit to apply the operation";
   } else if (isTwoQubitSelected && !isTwoQubitPendingSecond) {

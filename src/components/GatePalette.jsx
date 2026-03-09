@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { theme, secLbl } from "../utils.js";
+import { theme, OperationSectionLabelStyle, monospaceFontFamily } from "../utils.js";
 import {
   GATE_DEFS,
   SINGLE_QUBIT_GATES,
@@ -9,22 +9,7 @@ import {
   OTHER_OPERATION_HOVER_BG,
   OTHER_OPERATION_BORDER,
 } from "../gateDefinitions.js";
-
-export function renderGateLabel(label) {
-  if (typeof label === "string" && label.endsWith("†")) {
-    const base = label.slice(0, -1);
-    return (
-      <>
-        {base}
-        <sup style={{ fontSize: "0.6em", lineHeight: 0, position: "relative", top: "-0.25em" }}>
-          †
-        </sup>
-      </>
-    );
-  }
-
-  return label;
-}
+import { PlusCircle, getOperationColors, renderGateLabel } from "./CircuitHelpers.jsx";
 
 /**
  * Individual gate button in the palette
@@ -95,7 +80,7 @@ function GateButton({ gate, gateKey, selected, onClick, isMobile }) {
           justifyContent: "center",
           fontWeight: 700,
           fontSize: isMobile ? 13 : 14,
-          fontFamily: "'Source Code Pro',monospace",
+          fontFamily: monospaceFontFamily,
           background: isXGate
             ? "transparent"
             : isOtherOperation
@@ -110,23 +95,7 @@ function GateButton({ gate, gateKey, selected, onClick, isMobile }) {
         }}
       >
         {isXGate ? (
-          <div
-            style={{
-              width: isMobile ? 24 : 28,
-              height: isMobile ? 24 : 28,
-              borderRadius: "50%",
-              background: gate.color,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              color: "#FFFFFF",
-              fontSize: isMobile ? 17 : 19,
-              fontWeight: 700,
-              lineHeight: 1,
-            }}
-          >
-            +
-          </div>
+          <PlusCircle size={isMobile ? 24 : 28} color={gate.color} />
         ) : (
           renderGateLabel(gate.label)
         )}
@@ -217,7 +186,7 @@ export function GatePalette({ selGate, selectGate, pending, isMobile, showInstru
         Operations 操作 :
       </div>
 
-      <div style={{...secLbl, marginTop: 0}}>Single-Qubit Gates</div>
+      <div style={{...OperationSectionLabelStyle, marginTop: 0}}>Single-Qubit Gates</div>
 
       <div style={isMobile ? { display: "flex", flexWrap: "wrap", gap: 4, marginBottom: 8 } : {}}>
         {SINGLE_QUBIT_GATES.map((g) => (
@@ -232,7 +201,7 @@ export function GatePalette({ selGate, selectGate, pending, isMobile, showInstru
         ))}
       </div>
 
-      <div style={{ ...secLbl, marginTop: isMobile ? 4 : 16 }}>Multi-Qubit Gates</div>
+      <div style={{ ...OperationSectionLabelStyle, marginTop: isMobile ? 4 : 16 }}>Multi-Qubit Gates</div>
 
       <div style={isMobile ? { display: "flex", flexWrap: "wrap", gap: 4, marginBottom: 8 } : {}}>
         {MULTI_QUBIT_GATES.map((g) => (
@@ -247,7 +216,7 @@ export function GatePalette({ selGate, selectGate, pending, isMobile, showInstru
         ))}
       </div>
 
-      <div style={{ ...secLbl, marginTop: isMobile ? 4 : 16 }}>Other Operations</div>
+      <div style={{ ...OperationSectionLabelStyle, marginTop: isMobile ? 4 : 16 }}>Other Operations</div>
 
       <div style={isMobile ? { display: "flex", gap: 4 } : {}}>
         <GateButton

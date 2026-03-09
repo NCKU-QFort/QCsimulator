@@ -1,4 +1,30 @@
-import { theme, btnC } from "../utils.js";
+import { theme, counterButtonStyle, monospaceFontFamily } from "../utils.js";
+
+/**
+ * Reusable counter control component: number of qubits, cbits, and steps
+ */
+function CounterControl({ label, value, onIncrement, onDecrement }) {
+  return (
+    <div
+      style={{
+        display: "flex",
+        alignItems: "center",
+        gap: 3,
+        padding: "3px 8px",
+        background: theme.bg,
+        borderRadius: 6,
+        border: `1px solid ${theme.borderLight}`,
+      }}
+    >
+      <span style={{ fontSize: 11, color: theme.textLight, fontWeight: 500 }}>{label}</span>
+      <button onClick={onDecrement} style={counterButtonStyle}>−</button>
+      <span style={{ fontSize: 12, fontWeight: 600, color: theme.text, minWidth: 20, textAlign: "center" }}>
+        {value}
+      </span>
+      <button onClick={onIncrement} style={counterButtonStyle}>+</button>
+    </div>
+  );
+}
 
 /**
  * Circuit control buttons (Q/S adjusters, Clear, Run)
@@ -6,65 +32,9 @@ import { theme, btnC } from "../utils.js";
 function CircuitControls({ nq, nc, ns, shotsInput, setShotsInput, isShotsValid, addQ, rmQ, addC, rmC, addS, rmS, clear, run }) {
   return (
     <div style={{ display: "flex", gap: 4, alignItems: "center", flexWrap: "wrap" }}>
-      {/* Qubit count control */}
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          gap: 3,
-          padding: "3px 8px",
-          background: theme.bg,
-          borderRadius: 6,
-          border: `1px solid ${theme.borderLight}`,
-        }}
-      >
-        <span style={{ fontSize: 11, color: theme.textLight, fontWeight: 500 }}>Qubits</span>
-        <button onClick={rmQ} style={btnC}>−</button>
-        <span style={{ fontSize: 12, fontWeight: 600, color: theme.text, minWidth: 14, textAlign: "center" }}>
-          {nq}
-        </span>
-        <button onClick={addQ} style={btnC}>+</button>
-      </div>
-
-      {/* Classical bit count control */}
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          gap: 3,
-          padding: "3px 8px",
-          background: theme.bg,
-          borderRadius: 6,
-          border: `1px solid ${theme.borderLight}`,
-        }}
-      >
-        <span style={{ fontSize: 11, color: theme.textLight, fontWeight: 500 }}>Cbits</span>
-        <button onClick={rmC} style={btnC}>−</button>
-        <span style={{ fontSize: 12, fontWeight: 600, color: theme.text, minWidth: 14, textAlign: "center" }}>
-          {nc}
-        </span>
-        <button onClick={addC} style={btnC}>+</button>
-      </div>
-
-      {/* Step count control */}
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          gap: 3,
-          padding: "3px 8px",
-          background: theme.bg,
-          borderRadius: 6,
-          border: `1px solid ${theme.borderLight}`,
-        }}
-      >
-        <span style={{ fontSize: 11, color: theme.textLight, fontWeight: 500 }}>Steps</span>
-        <button onClick={rmS} style={btnC}>−</button>
-        <span style={{ fontSize: 12, fontWeight: 600, color: theme.text, minWidth: 18, textAlign: "center" }}>
-          {ns}
-        </span>
-        <button onClick={addS} style={btnC}>+</button>
-      </div>
+      <CounterControl label="Qubits" value={nq} onIncrement={addQ} onDecrement={rmQ} />
+      <CounterControl label="Cbits" value={nc} onIncrement={addC} onDecrement={rmC} />
+      <CounterControl label="Steps" value={ns} onIncrement={addS} onDecrement={rmS} />
 
       {/* Shots input */}
       <div
@@ -92,7 +62,7 @@ function CircuitControls({ nq, nc, ns, shotsInput, setShotsInput, isShotsValid, 
             color: isShotsValid ? theme.text : "#B91C1C",
             fontSize: 12,
             fontWeight: 600,
-            fontFamily: "'Source Code Pro',monospace",
+            fontFamily: monospaceFontFamily,
             outline: "none",
           }}
           aria-label="Shots"
