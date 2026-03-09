@@ -61,4 +61,4 @@ jobs:
             --base main \
             --head "bump-v${{ steps.version.outputs.new_version }}" \
             --title "Bump version to v${{ steps.version.outputs.new_version }}" \
-            --body "This PR bumps the version to **v${{ steps.version.outputs.new_version }}**.
+            --body "This PR bumps the version to **v${{ steps.version.outputs.new_version }}**."
