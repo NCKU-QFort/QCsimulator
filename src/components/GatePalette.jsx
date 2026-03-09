@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { theme, OperationSectionLabelStyle, monospaceFontFamily } from "../utils.js";
+import { OperationSectionLabelStyle, monospaceFontFamily } from "../utils.js";
 import {
   GATE_DEFS,
   SINGLE_QUBIT_GATES,
@@ -14,7 +14,7 @@ import { PlusCircle, getOperationColors, renderGateLabel } from "./CircuitHelper
 /**
  * Individual gate button in the palette
  */
-function GateButton({ gate, gateKey, selected, onClick, isMobile }) {
+function GateButton({ gate, gateKey, selected, onClick, isMobile, theme }) {
   const isMeasurement = gateKey === "M";
   const isConditional = gateKey === "IF";
   const isOtherOperation = isMeasurement || isConditional;
@@ -29,20 +29,13 @@ function GateButton({ gate, gateKey, selected, onClick, isMobile }) {
       style={
         isMobile
           ? {
-              padding: "6px 10px",
-              borderRadius: 8,
-              border: selected
-                ? `2px solid ${isOtherOperation ? OTHER_OPERATION_COLOR : gate.color}`
-                : `1px solid ${theme.borderLight}`,
-              background: selected ? (isOtherOperation ? theme.hover : gate.bg) : theme.surface,
-              color: isOtherOperation ? OTHER_OPERATION_COLOR : gate.color,
+              padding: 0,
+              border: "none",
+              background: "transparent",
               cursor: "pointer",
               display: "flex",
               alignItems: "center",
-              gap: 6,
               fontFamily: "inherit",
-              fontSize: 13,
-              fontWeight: 600,
             }
           : {
               width: "100%",
@@ -50,14 +43,14 @@ function GateButton({ gate, gateKey, selected, onClick, isMobile }) {
               marginBottom: 3,
               borderRadius: 8,
               border: isHovered && !selected
-                ? `1px solid ${isOtherOperation ? OTHER_OPERATION_COLOR : gate.color}60`
+                ? `1px solid ${isOtherOperation ? OTHER_OPERATION_BORDER : gate.color}60`
                 : selected
-                ? `2px solid ${isOtherOperation ? OTHER_OPERATION_COLOR : gate.color}`
+                ? `2px solid ${isOtherOperation ? OTHER_OPERATION_BORDER : gate.color}`
                 : "1px solid transparent",
               background: selected
                 ? isOtherOperation ? theme.hover : gate.bg
                 : isHovered
-                ? `${isOtherOperation ? OTHER_OPERATION_COLOR : gate.color}15`
+                ? `${isOtherOperation ? OTHER_OPERATION_BORDER : gate.color}15`
                 : "transparent",
               color: theme.text,
               cursor: "pointer",
@@ -110,7 +103,7 @@ function GateButton({ gate, gateKey, selected, onClick, isMobile }) {
 /**
  * Usage instructions panel
  */
-function UsageInstructions({ expanded, onToggle }) {
+function UsageInstructions({ expanded, onToggle, theme }) {
   return (
     <div
       style={{
@@ -163,7 +156,7 @@ function UsageInstructions({ expanded, onToggle }) {
 /**
  * Gate palette component for selecting gates
  */
-export function GatePalette({ selGate, selectGate, pending, isMobile, showInstructions = true }) {
+export function GatePalette({ selGate, selectGate, pending, isMobile, showInstructions = true, theme }) {
   const [instructionsExpanded, setInstructionsExpanded] = useState(false);
 
   return (
@@ -172,6 +165,7 @@ export function GatePalette({ selGate, selectGate, pending, isMobile, showInstru
         <UsageInstructions
           expanded={instructionsExpanded}
           onToggle={() => setInstructionsExpanded((v) => !v)}
+          theme={theme}
         />
       )}
 
@@ -197,6 +191,7 @@ export function GatePalette({ selGate, selectGate, pending, isMobile, showInstru
             selected={selGate === g}
             onClick={() => selectGate(g)}
             isMobile={isMobile}
+            theme={theme}
           />
         ))}
       </div>
@@ -212,6 +207,7 @@ export function GatePalette({ selGate, selectGate, pending, isMobile, showInstru
             selected={selGate === g}
             onClick={() => selectGate(g)}
             isMobile={isMobile}
+            theme={theme}
           />
         ))}
       </div>
@@ -225,6 +221,7 @@ export function GatePalette({ selGate, selectGate, pending, isMobile, showInstru
           selected={selGate === "M"}
           onClick={() => selectGate("M")}
           isMobile={isMobile}
+          theme={theme}
         />
         <GateButton
           gate={{ label: "if", desc: "Conditional" }}
@@ -232,6 +229,7 @@ export function GatePalette({ selGate, selectGate, pending, isMobile, showInstru
           selected={selGate === "IF"}
           onClick={() => selectGate("IF")}
           isMobile={isMobile}
+          theme={theme}
         />
       </div>
     </>

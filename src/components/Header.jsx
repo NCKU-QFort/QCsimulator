@@ -1,10 +1,11 @@
-import { theme, counterButtonStyle, monospaceFontFamily } from "../utils.js";
+import { counterButtonStyle, monospaceFontFamily, inputValidationStyles } from "../utils.js";
+import { useTheme } from "./ThemeContext.jsx";
 import pkg from "../../package.json";
 
 /**
  * Reusable counter control component: number of qubits, cbits, and steps
  */
-function CounterControl({ label, value, onIncrement, onDecrement }) {
+function CounterControl({ label, value, onIncrement, onDecrement, theme }) {
   return (
     <div
       style={{
@@ -17,12 +18,12 @@ function CounterControl({ label, value, onIncrement, onDecrement }) {
         border: `1px solid ${theme.borderLight}`,
       }}
     >
-      <span style={{ fontSize: 11, color: theme.textLight, fontWeight: 500 }}>{label}</span>
-      <button onClick={onDecrement} style={counterButtonStyle}>−</button>
+      <span style={{ fontSize: 11, color: theme.text, fontWeight: 500 }}>{label}</span>
+      <button onClick={onDecrement} style={{ ...counterButtonStyle, background: theme.surface, color: theme.textMid, borderColor: theme.border }}>−</button>
       <span style={{ fontSize: 12, fontWeight: 600, color: theme.text, minWidth: 20, textAlign: "center" }}>
         {value}
       </span>
-      <button onClick={onIncrement} style={counterButtonStyle}>+</button>
+      <button onClick={onIncrement} style={{ ...counterButtonStyle, background: theme.surface, color: theme.textMid, borderColor: theme.border }}>+</button>
     </div>
   );
 }
@@ -30,12 +31,12 @@ function CounterControl({ label, value, onIncrement, onDecrement }) {
 /**
  * Circuit control buttons (Q/S adjusters, Clear, Run)
  */
-function CircuitControls({ nq, nc, ns, shotsInput, setShotsInput, isShotsValid, addQ, rmQ, addC, rmC, addS, rmS, clear, run }) {
+function CircuitControls({ nq, nc, ns, shotsInput, setShotsInput, isShotsValid, addQ, rmQ, addC, rmC, addS, rmS, clear, run, theme }) {
   return (
     <div style={{ display: "flex", gap: 4, alignItems: "center", flexWrap: "wrap" }}>
-      <CounterControl label="Qubits" value={nq} onIncrement={addQ} onDecrement={rmQ} />
-      <CounterControl label="Cbits" value={nc} onIncrement={addC} onDecrement={rmC} />
-      <CounterControl label="Steps" value={ns} onIncrement={addS} onDecrement={rmS} />
+      <CounterControl label="Qubits" value={nq} onIncrement={addQ} onDecrement={rmQ} theme={theme} />
+      <CounterControl label="Cbits" value={nc} onIncrement={addC} onDecrement={rmC} theme={theme} />
+      <CounterControl label="Steps" value={ns} onIncrement={addS} onDecrement={rmS} theme={theme} />
 
       {/* Shots input */}
       <div
@@ -46,10 +47,10 @@ function CircuitControls({ nq, nc, ns, shotsInput, setShotsInput, isShotsValid, 
           padding: "3px 8px",
           background: theme.bg,
           borderRadius: 6,
-          border: `1px solid ${isShotsValid ? theme.borderLight : "#EF4444"}`,
+          border: `1px solid ${isShotsValid ? theme.borderLight : inputValidationStyles.invalidBorder}`,
         }}
       >
-        <span style={{ fontSize: 11, color: theme.textLight, fontWeight: 500 }}>Shots</span>
+        <span style={{ fontSize: 11, color: theme.text, fontWeight: 500 }}>Shots</span>
         <input
           value={shotsInput}
           onChange={(e) => setShotsInput(e.target.value)}
@@ -58,9 +59,9 @@ function CircuitControls({ nq, nc, ns, shotsInput, setShotsInput, isShotsValid, 
             width: 64,
             padding: "2px 6px",
             borderRadius: 4,
-            border: `1px solid ${isShotsValid ? theme.border : "#EF4444"}`,
-            background: isShotsValid ? theme.surface : "#FEF2F2",
-            color: isShotsValid ? theme.text : "#B91C1C",
+            border: `1px solid ${isShotsValid ? theme.border : inputValidationStyles.invalidBorder}`,
+            background: isShotsValid ? theme.surface : inputValidationStyles.invalidBg,
+            color: isShotsValid ? theme.text : inputValidationStyles.invalidText,
             fontSize: 12,
             fontWeight: 600,
             fontFamily: monospaceFontFamily,
@@ -78,7 +79,7 @@ function CircuitControls({ nq, nc, ns, shotsInput, setShotsInput, isShotsValid, 
           borderRadius: 6,
           border: `1px solid ${theme.border}`,
           background: theme.surface,
-          color: theme.textMid,
+          color: theme.text,
           cursor: "pointer",
           fontSize: 11,
           fontWeight: 500,
@@ -116,6 +117,8 @@ function CircuitControls({ nq, nc, ns, shotsInput, setShotsInput, isShotsValid, 
  * Application header component
  */
 export function Header({ nq, nc, ns, shotsInput, setShotsInput, isShotsValid, addQ, rmQ, addC, rmC, addS, rmS, clear, run, isMobile }) {
+  const { theme } = useTheme();
+  
   return (
     <div
       style={{
@@ -178,6 +181,7 @@ export function Header({ nq, nc, ns, shotsInput, setShotsInput, isShotsValid, ad
         rmS={rmS}
         clear={clear}
         run={run}
+        theme={theme}
       />
     </div>
   );

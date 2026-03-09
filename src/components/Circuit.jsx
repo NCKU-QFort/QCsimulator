@@ -1,5 +1,5 @@
 import React from "react";
-import { theme, getCellCenterX, getCellCenterY, monospaceFontFamily } from "../utils.js";
+import { getCellCenterX, getCellCenterY, monospaceFontFamily, inputValidationStyles } from "../utils.js";
 import {
   GATE_DEFS,
   OTHER_OPERATION_COLOR,
@@ -10,8 +10,6 @@ import {
 import {
   ControlDot,
   PlusCircle,
-  getMeasurementBoxStyle,
-  MeasurementIcon,
   MeasurementArrow,
   collectStepData,
   renderGateLabel,
@@ -20,7 +18,7 @@ import {
 /**
  * Renders a quantum gate visual representation
  */
-function GateRenderer({ gate, isMobile }) {
+function GateRenderer({ gate, isMobile, theme }) {
   if (!gate) return null;
 
   const t = gate.type;
@@ -52,8 +50,24 @@ function GateRenderer({ gate, isMobile }) {
 
   if (t === "M") {
     return (
-      <div style={getMeasurementBoxStyle(sz)}>
-        <MeasurementIcon isMobile={isMobile} />
+      <div
+        style={{
+          width: sz,
+          height: sz,
+          borderRadius: 7,
+          background: OTHER_OPERATION_BG,
+          border: `2px solid ${OTHER_OPERATION_BORDER}`,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          color: OTHER_OPERATION_COLOR,
+          fontWeight: 700,
+          fontSize: isMobile ? 14 : 16,
+          fontFamily: monospaceFontFamily,
+          boxShadow: "0 1px 3px rgba(0,0,0,0.06)",
+        }}
+      >
+        M
       </div>
     );
   }
@@ -87,7 +101,7 @@ function GateRenderer({ gate, isMobile }) {
 /**
  * Individual gate cell in the circuit grid
  */
-function GateCell({ q, s, circ, selGate, pending, hovered, handleClick, setHovered, isMobile, CH, CW }) {
+function GateCell({ q, s, circ, selGate, pending, hovered, handleClick, setHovered, isMobile, CH, CW, theme }) {
   const gate = circ[`${q}-${s}`];
   const isHovered = hovered && hovered.q === q && hovered.s === s;
   const hasGate = Boolean(gate);
@@ -145,7 +159,7 @@ function GateCell({ q, s, circ, selGate, pending, hovered, handleClick, setHover
         transition: "background 0.1s",
       }}
     >
-      <GateRenderer gate={gate} isMobile={isMobile} />
+      <GateRenderer gate={gate} isMobile={isMobile} theme={theme} />
 
       {isIfAnchor && (
         <div
@@ -155,9 +169,9 @@ function GateCell({ q, s, circ, selGate, pending, hovered, handleClick, setHover
             right: isMobile ? 7 : 8,
             fontSize: isMobile ? 8 : 9,
             fontWeight: 700,
-            color: "#666",
-            background: "#F1F5F9",
-            border: "1px solid #CBD5E1",
+            color: OTHER_OPERATION_COLOR,
+            background: OTHER_OPERATION_BG,
+            border: `1px solid ${OTHER_OPERATION_BORDER}`,
             borderRadius: 4,
             padding: "0px 3px",
             lineHeight: 1.2,
@@ -261,13 +275,15 @@ function GateCell({ q, s, circ, selGate, pending, hovered, handleClick, setHover
             width: isMobile ? 36 : 42,
             height: isMobile ? 36 : 42,
             borderRadius: 7,
-            border: `2px dashed ${theme.textLight}`,
+            border: `2px dashed ${OTHER_OPERATION_BORDER}`,
+            background: `${OTHER_OPERATION_BG}40`,
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            color: theme.textLight,
+            color: OTHER_OPERATION_COLOR,
             fontWeight: 700,
-            fontSize: 13,
+            fontSize: isMobile ? 14 : 16,
+            fontFamily: monospaceFontFamily,
           }}
         >
           M
@@ -276,8 +292,24 @@ function GateCell({ q, s, circ, selGate, pending, hovered, handleClick, setHover
 
       {/* Persistent preview for selected measurement qubit */}
       {isPendingMeasurementSource && (
-        <div style={getMeasurementBoxStyle(isMobile ? 36 : 42)}>
-          <MeasurementIcon isMobile={isMobile} />
+        <div
+          style={{
+            width: isMobile ? 36 : 42,
+            height: isMobile ? 36 : 42,
+            borderRadius: 7,
+            background: OTHER_OPERATION_BG,
+            border: `2px solid ${OTHER_OPERATION_BORDER}`,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            color: OTHER_OPERATION_COLOR,
+            fontWeight: 700,
+            fontSize: isMobile ? 14 : 16,
+            fontFamily: monospaceFontFamily,
+            boxShadow: "0 1px 3px rgba(0,0,0,0.06)",
+          }}
+        >
+          M
         </div>
       )}
 
@@ -306,7 +338,7 @@ function GateCell({ q, s, circ, selGate, pending, hovered, handleClick, setHover
 /**
  * A single qubit wire (row) in the circuit
  */
-function QubitWire({ q, ns, circ, selGate, pending, hovered, handleClick, setHovered, isMobile, CH, CW, LBL_W }) {
+function QubitWire({ q, ns, circ, selGate, pending, hovered, handleClick, setHovered, isMobile, CH, CW, LBL_W, theme }) {
   return (
     <div style={{ display: "flex", alignItems: "center", height: CH }}>
       <div
@@ -357,6 +389,7 @@ function QubitWire({ q, ns, circ, selGate, pending, hovered, handleClick, setHov
             isMobile={isMobile}
             CH={CH}
             CW={CW}
+            theme={theme}
           />
           );
         })}
@@ -368,9 +401,7 @@ function QubitWire({ q, ns, circ, selGate, pending, hovered, handleClick, setHov
 /**
  * A single classical bit wire (row) in the circuit
  */
-function ClassicalBitWire({ nc, nq, ns, circ, cbits, isMobile, CH, CW, LBL_W }) {
-  const measurementColor = OTHER_OPERATION_COLOR;
-
+function ClassicalBitWire({ nc, nq, ns, circ, cbits, isMobile, CH, CW, LBL_W, theme }) {
   return (
     <div style={{ display: "flex", alignItems: "center", height: CH }}>
       <div
@@ -444,7 +475,7 @@ function ClassicalBitWire({ nc, nq, ns, circ, cbits, isMobile, CH, CW, LBL_W }) 
                     transform: "translateX(-50%)",
                   }}
                 >
-                  <div style={{ color: measurementColor, fontWeight: 600 }}>
+                  <div style={{ color: theme.cvalue, fontWeight: 600 }}>
                     c<sub style={{ fontSize: isMobile ? 7 : 8 }}>{measurementCbit}</sub>
                   </div>
                 </div>
@@ -460,12 +491,11 @@ function ClassicalBitWire({ nc, nq, ns, circ, cbits, isMobile, CH, CW, LBL_W }) 
 /**
  * Selector for choosing which classical bit to store measurement result
  */
-function CbitSelector({ nc, nq, pending, handleCbitClick, isMobile, CH, CW, LBL_W }) {
+function CbitSelector({ nc, nq, pending, handleCbitClick, isMobile, CH, CW, LBL_W, theme }) {
   if (!pending || pending.gate !== "M") return null;
 
   const left = LBL_W + 5 + (pending.step - 1) * CW;
   const top = getCellCenterY(pending.qubit, CH) + CH + 10;
-  const grayColor = OTHER_OPERATION_COLOR;
 
   return (
     <div
@@ -474,7 +504,7 @@ function CbitSelector({ nc, nq, pending, handleCbitClick, isMobile, CH, CW, LBL_
         left,
         top,
         background: theme.surface,
-        border: `2px solid ${grayColor}`,
+        border: `2px solid ${theme.border}`,
         borderRadius: 8,
         padding: isMobile ? "8px 10px" : "10px 12px",
         boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
@@ -508,7 +538,7 @@ function CbitSelector({ nc, nq, pending, handleCbitClick, isMobile, CH, CW, LBL_
             style={{
               padding: isMobile ? "4px 10px" : "6px 12px",
               background: theme.bg,
-              border: `1.5px solid ${grayColor}`,
+              border: `1.5px solid ${theme.border}`,
               borderRadius: 5,
               color: theme.textMid,
               cursor: "pointer",
@@ -548,6 +578,7 @@ function IfConditionEditor({
   CH,
   CW,
   LBL_W,
+  theme,
 }) {
   if (!pending || pending.gate !== "IF") return null;
 
@@ -566,7 +597,7 @@ function IfConditionEditor({
         top,
         transform: "translateX(-50%)",
         background: theme.surface,
-        border: `2px solid ${isValid ? "#94A3B8" : "#DC2626"}`,
+        border: `2px solid ${isValid ? theme.border : inputValidationStyles.invalidBorder}`,
         borderRadius: 8,
         padding: isMobile ? "8px 10px" : "10px 12px",
         boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
@@ -606,12 +637,12 @@ function IfConditionEditor({
             width: isMobile ? 56 : 64,
             padding: isMobile ? "5px 7px" : "6px 8px",
             borderRadius: 5,
-            border: `1.5px solid ${isValid ? "#94A3B8" : "#DC2626"}`,
+            border: `1.5px solid ${isValid ? theme.border : inputValidationStyles.invalidBorder}`,
             outline: "none",
             fontFamily: "'Source Code Pro', monospace",
             fontSize: isMobile ? 11 : 12,
-            color: theme.text,
-            background: isValid ? theme.bg : "#FEF2F2",
+            color: isValid ? theme.text : inputValidationStyles.invalidText,
+            background: isValid ? theme.bg : inputValidationStyles.invalidBg,
           }}
         />
       </div>
@@ -678,7 +709,7 @@ function getConnections(circ, nq, step) {
 function getMeasurementConnections(circ, nq, step) {
   return collectStepData(circ, nq, step, (g, q) => {
     if (g && g.type === "M" && g.cbit !== undefined) {
-      return { qubit: q, cbit: g.cbit, color: "#888" };
+      return { qubit: q, cbit: g.cbit, color: OTHER_OPERATION_BG };
     }
     return null;
   });
@@ -687,7 +718,7 @@ function getMeasurementConnections(circ, nq, step) {
 /**
  * Get all IF connections (from gate to classical wire) for a given step
  */
-function getIfConnections(circ, nq, step) {
+function getIfConnections(circ, nq, step, theme) {
   return collectStepData(circ, nq, step, (g, q) => {
     if (g && g.type !== "M" && g.if && Number.isInteger(g.if.value) && g.if.anchor === q) {
       return { qubit: q, value: g.if.value, color: OTHER_OPERATION_COLOR };
@@ -699,7 +730,7 @@ function getIfConnections(circ, nq, step) {
 /**
  * Renders vertical connection lines between qubits
  */
-function ConnectionLines({ circ, nq, nc, ns, pending, hovered, isMobile, CH, CW, LBL_W }) {
+function ConnectionLines({ circ, nq, nc, ns, pending, hovered, isMobile, CH, CW, LBL_W, theme }) {
   const measurementGateSize = isMobile ? 36 : 42;
   const measurementStartOffset = measurementGateSize / 2;
   const classicalSeparatorHeight = isMobile ? 12 : 16;
@@ -771,7 +802,7 @@ function ConnectionLines({ circ, nq, nc, ns, pending, hovered, isMobile, CH, CW,
       {/* IF connections from gates to classical wire */}
       {Array.from({ length: ns }, (_, stepIndex) => {
         const step = stepIndex + 1;
-        const ifConnections = getIfConnections(circ, nq, step);
+        const ifConnections = getIfConnections(circ, nq, step, theme);
 
         return ifConnections.map((c, ci) => {
           const top = getCellCenterY(c.qubit, CH);
@@ -787,7 +818,7 @@ function ConnectionLines({ circ, nq, nc, ns, pending, hovered, isMobile, CH, CW,
                   top,
                   width: 2,
                   height: Math.max(0, classicalY - top),
-                  background: c.color,
+                  background: OTHER_OPERATION_BG,
                   zIndex: 0,
                   pointerEvents: "none",
                 }}
@@ -800,7 +831,7 @@ function ConnectionLines({ circ, nq, nc, ns, pending, hovered, isMobile, CH, CW,
                   width: 8,
                   height: 8,
                   borderRadius: "50%",
-                  background: c.color,
+                  background: OTHER_OPERATION_BG,
                   zIndex: 4,
                   pointerEvents: "none",
                 }}
@@ -814,9 +845,9 @@ function ConnectionLines({ circ, nq, nc, ns, pending, hovered, isMobile, CH, CW,
                   fontSize: isMobile ? 9 : 10,
                   fontWeight: 700,
                   fontFamily: "'Source Code Pro', monospace",
-                  color: c.color,
-                  background: `${OTHER_OPERATION_BG}EE`,
-                  border: `1px solid ${OTHER_OPERATION_BORDER}`,
+                  color: theme.cvalue,
+                  background: "transparent",
+                  border: "none",
                   borderRadius: 4,
                   padding: "0px 4px",
                   zIndex: 4,
@@ -835,7 +866,7 @@ function ConnectionLines({ circ, nq, nc, ns, pending, hovered, isMobile, CH, CW,
         const top = getCellCenterY(pending.qubit, CH) + measurementStartOffset;
         const bottom = nq * CH + classicalSeparatorHeight + CH / 2;
         const centerX = getCellCenterX(pending.step, CW, LBL_W);
-        const grayColor = OTHER_OPERATION_COLOR;
+        const grayColor = OTHER_OPERATION_BG;
 
         return (
           <MeasurementArrow
@@ -904,6 +935,7 @@ export function CircuitGrid({
   removePendingIf,
   setHovered,
   isMobile,
+  theme,
 }) {
   const CH = isMobile ? 48 : 58;
   const CW = isMobile ? 48 : 58;
@@ -960,6 +992,7 @@ export function CircuitGrid({
               CH={CH}
               CW={CW}
               LBL_W={LBL_W}
+              theme={theme}
             />
           ))}
 
@@ -977,6 +1010,7 @@ export function CircuitGrid({
             CH={CH}
             CW={CW}
             LBL_W={LBL_W}
+            theme={theme}
           />
 
           {/* Classical bit selector for pending measurement */}
@@ -989,6 +1023,7 @@ export function CircuitGrid({
             CH={CH}
             CW={CW}
             LBL_W={LBL_W}
+            theme={theme}
           />
 
           <IfConditionEditor
@@ -1002,6 +1037,7 @@ export function CircuitGrid({
             CH={CH}
             CW={CW}
             LBL_W={LBL_W}
+            theme={theme}
           />
 
           {/* Connection lines */}
@@ -1016,6 +1052,7 @@ export function CircuitGrid({
             CH={CH}
             CW={CW}
             LBL_W={LBL_W}
+            theme={theme}
           />
         </div>
       </div>

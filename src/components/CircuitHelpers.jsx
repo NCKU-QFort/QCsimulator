@@ -1,5 +1,4 @@
 import React from "react";
-import { theme } from "../utils.js";
 
 /**
  * Render gate label with proper dagger superscript formatting
@@ -63,45 +62,6 @@ export function PlusCircle({ size, color, preview = false }) {
 }
 
 /**
- * Get measurement box style
- */
-export const getMeasurementBoxStyle = (sz) => ({
-  width: sz,
-  height: sz,
-  borderRadius: 7,
-  background: theme.surface,
-  border: `2px solid ${theme.border}`,
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center",
-  flexDirection: "column",
-  boxShadow: "0 1px 3px rgba(0,0,0,0.06)",
-});
-
-/**
- * Renders measurement icon (arc and M label)
- */
-export function MeasurementIcon({ isMobile }) {
-  return (
-    <>
-      <div
-        style={{
-          width: 16,
-          height: 9,
-          borderBottom: `2px solid ${theme.textMid}`,
-          borderRadius: "0 0 50% 50%",
-          marginTop: 2,
-          transform: "rotate(180deg)",
-        }}
-      />
-      <div style={{ fontSize: 8, color: theme.textMid, marginTop: 1, fontWeight: 600 }}>
-        M
-      </div>
-    </>
-  );
-}
-
-/**
  * Renders a measurement arrow (dashed line + arrowhead)
  */
 export function MeasurementArrow({ centerX, top, bottom, color, measurementArrowHeight = 9 }) {
@@ -143,7 +103,7 @@ export function MeasurementArrow({ centerX, top, bottom, color, measurementArrow
 /**
  * Get operation colors based on gate type
  */
-export function getOperationColors(isOtherOperation, gate, OTHER_OPERATION_COLOR, OTHER_OPERATION_BG, OTHER_OPERATION_BORDER) {
+export function getOperationColors(isOtherOperation, gate, theme) {
   return {
     color: isOtherOperation ? OTHER_OPERATION_COLOR : gate.color,
     bg: isOtherOperation ? OTHER_OPERATION_BG : gate.bg,

@@ -1,21 +1,11 @@
 // =============================================================================
-// THEME
+// INPUT VALIDATION STYLES
 // =============================================================================
 
-export const theme = {
-  bg: "#F4F6FB",
-  surface: "#FFFFFF",
-  sidebar: "#EEF1F8",
-  border: "#D8DEE9",
-  borderLight: "#E8ECF4",
-  text: "#1E293B",
-  textMid: "#475569",
-  textLight: "#94A3B8",
-  wire: "#B0BEC5",
-  accent: "#3B82F6",
-  accentBg: "#EFF6FF",
-  run: "#0EA5E9",
-  hover: "#F1F5F9",
+export const inputValidationStyles = {
+  invalidBorder: "#EF4444",
+  invalidBg: "#FEF2F2",
+  invalidText: "#B91C1C",
 };
 
 // =============================================================================
