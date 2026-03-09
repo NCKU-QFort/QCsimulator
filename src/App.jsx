@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { monospaceFontFamily } from "./utils.js";
+import { monospaceFontFamily, MAX_CLASSICAL_BITS, MAX_SHOTS } from "./utils.js";
 import { useTheme } from "./components/ThemeContext.jsx";
 import { GATE_DEFS, OTHER_OPERATION_COLOR, OTHER_OPERATION_BG, OTHER_OPERATION_BORDER } from "./gateDefinitions.js";
 import { useIsMobile } from "./hooks/useIsMobile.js";
@@ -105,9 +105,9 @@ export default function App() {
   const simulation = useSimulation(nq, nc, circ, ns);
   const { results, sv, cbits, showSv, chartData, shotsExecuted, run, clear: clearResults, setShowSv } = simulation;
 
-  const isShotsValid = /^\d+$/.test(shotsInput) && Number(shotsInput) >= 1 && Number(shotsInput) <= 100000;
+  const isShotsValid = /^\d+$/.test(shotsInput) && Number(shotsInput) >= 1 && Number(shotsInput) <= MAX_SHOTS;
 
-  const addC = () => setNc((n) => Math.min(n + 1, 20));
+  const addC = () => setNc((n) => Math.min(n + 1, MAX_CLASSICAL_BITS));
   const rmC = () => setNc((n) => Math.max(n - 1, 1));
 
   const clear = () => {
@@ -136,11 +136,11 @@ export default function App() {
           background:
             selGate === "X"
               ? "transparent"
-              : selGate === "M" || selGate === "IF"
+              : selGate === "M" || selGate === "IF" || selGate === "DEL"
               ? OTHER_OPERATION_BG
               : GATE_DEFS[selGate]?.bg || "#F1F5F9",
           color:
-            selGate === "M" || selGate === "IF"
+            selGate === "M" || selGate === "IF" || selGate === "DEL"
               ? OTHER_OPERATION_COLOR
               : GATE_DEFS[selGate]?.color || theme.textMid,
           marginRight: 6,
@@ -148,9 +148,7 @@ export default function App() {
             selGate === "X"
               ? "none"
               : `1.5px solid ${
-                  selGate === "M"
-                    ? OTHER_OPERATION_BORDER
-                    : selGate === "IF"
+                  selGate === "M" || selGate === "IF" || selGate === "DEL"
                     ? OTHER_OPERATION_BORDER
                     : (GATE_DEFS[selGate]?.color || theme.border)
                 }40`,
@@ -163,6 +161,8 @@ export default function App() {
           "M"
         ) : selGate === "IF" ? (
           "if"
+        ) : selGate === "DEL" ? (
+          "Del"
         ) : (
           renderGateLabel(GATE_DEFS[selGate]?.label || selGate)
         )}
@@ -171,6 +171,8 @@ export default function App() {
         ? "Measurement"
         : selGate === "IF"
         ? "Conditional"
+        : selGate === "DEL"
+        ? "Delete"
         : GATE_DEFS[selGate]?.desc || selGate}{" "}
       selected
     </>
@@ -181,8 +183,10 @@ export default function App() {
   const isTwoQubitSelected = Boolean(selGate && GATE_DEFS[selGate] && GATE_DEFS[selGate].qubits === 2);
   const isTwoQubitPendingSecond = Boolean(pending && isTwoQubitSelected && pending.gate === selGate);
 
-  let instructionMessage = "Click any operation in the circuit to remove it";
-  if (selGate === "IF") {
+  let instructionMessage = "Select an operation from the palette";
+  if (selGate === "DEL") {
+    instructionMessage = "Click any operation in the circuit to remove it";
+  } else if (selGate === "IF") {
     instructionMessage = "Choose a gate in the circuit to modify if-condition";
   } else if (selGate === "M" || (selGate && GATE_DEFS[selGate] && GATE_DEFS[selGate].qubits === 1)) {
     instructionMessage = "Choose a position in the circuit to apply the operation";

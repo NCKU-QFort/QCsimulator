@@ -116,7 +116,8 @@ function GateCell({ q, s, circ, selGate, pending, hovered, handleClick, setHover
       const step = Number.parseInt(key.split("-")[1], 10);
       return step === s;
     });
-  const canPlace = selGate && selGate !== "IF" && !hasGate && !(selGate === "M" && isMeasurementStepOccupied);
+  const canPlace = selGate && selGate !== "IF" && selGate !== "DEL" && !hasGate && !(selGate === "M" && isMeasurementStepOccupied);
+  const canDelete = selGate === "DEL" && hasGate;
   const isPendingTarget =
     pending &&
     ["CNOT", "CZ", "SWAP"].includes(pending.gate) &&
@@ -148,11 +149,11 @@ function GateCell({ q, s, circ, selGate, pending, hovered, handleClick, setHover
         justifyContent: "center",
         position: "relative",
         zIndex: 1,
-        cursor: canPlace || isPendingTarget || (!selGate && hasGate) || canAttachIf ? "pointer" : "default",
+        cursor: canPlace || isPendingTarget || (!selGate && hasGate) || canAttachIf || canDelete ? "pointer" : "default",
         background:
           showPendingTargetPreview
             ? "#3B82F612"
-            : isHovered && (canPlace || (!selGate && hasGate) || canAttachIf)
+            : isHovered && (canPlace || (!selGate && hasGate) || canAttachIf || canDelete)
               ? theme.hover
               : "transparent",
         borderRadius: 5,

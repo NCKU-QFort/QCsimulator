@@ -17,7 +17,8 @@ import { PlusCircle, getOperationColors, renderGateLabel } from "./CircuitHelper
 function GateButton({ gate, gateKey, selected, onClick, isMobile, theme }) {
   const isMeasurement = gateKey === "M";
   const isConditional = gateKey === "IF";
-  const isOtherOperation = isMeasurement || isConditional;
+  const isDelete = gateKey === "DEL";
+  const isOtherOperation = isMeasurement || isConditional || isDelete;
   const isXGate = gateKey === "X";
   const [isHovered, setIsHovered] = useState(false);
 
@@ -215,6 +216,14 @@ export function GatePalette({ selGate, selectGate, pending, isMobile, showInstru
       <div style={{ ...OperationSectionLabelStyle, marginTop: isMobile ? 4 : 16 }}>Other Operations</div>
 
       <div style={isMobile ? { display: "flex", gap: 4 } : {}}>
+        <GateButton
+          gate={{ label: "Del", desc: "Delete" }}
+          gateKey="DEL"
+          selected={selGate === "DEL"}
+          onClick={() => selectGate("DEL")}
+          isMobile={isMobile}
+          theme={theme}
+        />
         <GateButton
           gate={{ label: "M", desc: "Measurement" }}
           gateKey="M"
