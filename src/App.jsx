@@ -1,5 +1,6 @@
-import { useState } from "react";
-import { monospaceFontFamily, MAX_CLASSICAL_BITS, MAX_SHOTS } from "./utils.js";
+import { useState, useRef } from "react";
+import { toPng, toSvg } from "html-to-image";
+import { monospaceFontFamily, MAX_CLASSICAL_BITS, MAX_SHOTS, basisLabel } from "./utils.js";
 import { useTheme } from "./components/ThemeContext.jsx";
 import { GATE_DEFS, OTHER_OPERATION_COLOR, OTHER_OPERATION_BG, OTHER_OPERATION_BORDER } from "./gateDefinitions.js";
 import { useIsMobile } from "./hooks/useIsMobile.js";
@@ -43,6 +44,110 @@ function MoonIcon() {
 }
 
 /**
+ * Download icon
+ */
+function DownloadIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+      <polyline points="7 10 12 15 17 10" />
+      <line x1="12" y1="15" x2="12" y2="3" />
+    </svg>
+  );
+}
+
+/**
+ * Export menu component
+ */
+function ExportMenu({ onExportCircuit, onExportData, disabled, theme }) {
+  const [showMenu, setShowMenu] = useState(false);
+  
+  const menuButtonStyle = {
+    width: "100%",
+    padding: "10px 16px",
+    border: "none",
+    background: "transparent",
+    textAlign: "left",
+    fontSize: 13,
+    fontWeight: 500,
+    cursor: "pointer",
+    fontFamily: "inherit",
+    transition: "background 0.15s",
+  };
+
+  return (
+    <div style={{ position: "relative" }}>
+      <button
+        onClick={() => setShowMenu(!showMenu)}
+        style={{
+          width: 36,
+          height: 36,
+          borderRadius: 8,
+          border: `1px solid ${theme.border}`,
+          background: theme.surface,
+          color: theme.text,
+          cursor: "pointer",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          transition: "all 0.2s ease",
+          flexShrink: 0,
+        }}
+        aria-label="Export"
+        title="Export"
+      >
+        <DownloadIcon />
+      </button>
+
+      {showMenu && (
+        <>
+          <div onClick={() => setShowMenu(false)} style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, zIndex: 999 }} />
+          <div style={{
+            position: "absolute",
+            bottom: "calc(100% + 8px)",
+            right: 0,
+            background: theme.surface,
+            border: `1px solid ${theme.border}`,
+            borderRadius: 8,
+            boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
+            overflow: "hidden",
+            minWidth: 160,
+            zIndex: 1000,
+          }}>
+            {["png", "svg"].map((format) => (
+              <button
+                key={format}
+                onClick={() => {
+                  onExportCircuit(format);
+                  setShowMenu(false);
+                }}
+                style={{ ...menuButtonStyle, color: theme.text }}
+                onMouseEnter={(e) => (e.target.style.background = theme.hover)}
+                onMouseLeave={(e) => (e.target.style.background = "transparent")}
+              >
+                Export Circuit (.{format})
+              </button>
+            ))}
+            <button
+              onClick={() => {
+                onExportData();
+                setShowMenu(false);
+              }}
+              disabled={disabled}
+              style={{ ...menuButtonStyle, color: disabled ? theme.textLight : theme.text }}
+              onMouseEnter={(e) => !disabled && (e.target.style.background = theme.hover)}
+              onMouseLeave={(e) => (e.target.style.background = "transparent")}
+            >
+              Export Data
+            </button>
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
+/**
  * Theme switcher button component
  */
 function ThemeSwitcher() {
@@ -79,6 +184,7 @@ export default function App() {
   const [showPalette, setShowPalette] = useState(false);
   const [nc, setNc] = useState(2); // Number of classical bits
   const [shotsInput, setShotsInput] = useState("1000");
+  const circuitRef = useRef(null);
 
   const circuitState = useCircuitState(nc);
   const {
@@ -103,7 +209,7 @@ export default function App() {
   } = circuitState;
 
   const simulation = useSimulation(nq, nc, circ, ns);
-  const { results, sv, cbits, showSv, chartData, shotsExecuted, run, clear: clearResults, setShowSv } = simulation;
+  const { results, sv, cbits, showSv, chartData, shotsExecuted, shotCounts, isMeasurementResult, run, clear: clearResults, setShowSv } = simulation;
 
   const isShotsValid = /^\d+$/.test(shotsInput) && Number(shotsInput) >= 1 && Number(shotsInput) <= MAX_SHOTS;
 
@@ -118,6 +224,65 @@ export default function App() {
   const handleRun = () => {
     if (!isShotsValid) return;
     run(Number(shotsInput));
+  };
+
+  const handleExportCircuit = async (format) => {
+    if (!circuitRef.current) return;
+
+    try {
+      const originalBackground = circuitRef.current.style.background;
+      circuitRef.current.style.background = "transparent";
+
+      const exportFn = format === "svg" ? toSvg : toPng;
+      const options = format === "svg" 
+        ? { backgroundColor: null }
+        : { backgroundColor: null, pixelRatio: 2 };
+
+      const dataUrl = await exportFn(circuitRef.current, options);
+
+      circuitRef.current.style.background = originalBackground;
+
+      const link = document.createElement("a");
+      link.href = dataUrl;
+      link.download = `quantum-circuit-${Date.now()}.${format}`;
+      link.click();
+    } catch (error) {
+      console.error(`Failed to export circuit as ${format.toUpperCase()}:`, error);
+      alert("Failed to export circuit. Please try again.");
+    }
+  };
+
+  const handleExportData = () => {
+    if (!results || !shotCounts) {
+      alert("No simulation results available. Please run the simulation first.");
+      return;
+    }
+
+    // Prepare data in the specified format
+    const data = {};
+    const bitCount = isMeasurementResult ? nc : nq;
+
+    shotCounts.forEach((count, index) => {
+      if (count > 0) {
+        const label = basisLabel(index, bitCount);
+        data[label] = count;
+      }
+    });
+
+    const exportData = {
+      QubitNumber: nq,
+      CbitNumber: nc,
+      Shots: shotsExecuted,
+      data: data,
+    };
+
+    const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `quantum-data-${Date.now()}.json`;
+    link.click();
+    URL.revokeObjectURL(url);
   };
 
   const selectedOperationMessage = selGate ? (
@@ -386,24 +551,27 @@ export default function App() {
           </div>
 
           {/* Circuit Grid */}
-          <CircuitGrid
-            nq={nq}
-            nc={nc}
-            ns={ns}
-            circ={circ}
-            cbits={cbits}
-            selGate={selGate}
-            pending={pending}
-            hovered={hovered}
-            handleClick={handleClick}
-            handleCbitClick={handleCbitClick}
-            handleIfInputChange={handleIfInputChange}
-            applyPendingIf={applyPendingIf}
-            removePendingIf={removePendingIf}
-            setHovered={setHovered}
-            isMobile={isMobile}
-            theme={theme}
-          />
+          <div style={{ flex: 1, overflow: "auto", background: theme.bg }}>
+            <CircuitGrid
+              nq={nq}
+              nc={nc}
+              ns={ns}
+              circ={circ}
+              cbits={cbits}
+              selGate={selGate}
+              pending={pending}
+              hovered={hovered}
+              handleClick={handleClick}
+              handleCbitClick={handleCbitClick}
+              handleIfInputChange={handleIfInputChange}
+              applyPendingIf={applyPendingIf}
+              removePendingIf={removePendingIf}
+              setHovered={setHovered}
+              isMobile={isMobile}
+              theme={theme}
+              circuitRef={circuitRef}
+            />
+          </div>
 
           {/* Results Panel */}
           <div
@@ -451,7 +619,15 @@ export default function App() {
               <div>Copyright © 2026 <a href="https://qfort.ncku.edu.tw/">Center for Quantum Frontiers of Research & Technology (QFort)</a>, All Rights Reserved.</div>
               <div>Designed by Yi-Te Huang and Po-Chen Kuo</div>
             </div>
-            <ThemeSwitcher />
+            <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+              <ExportMenu
+                onExportCircuit={handleExportCircuit}
+                onExportData={handleExportData}
+                disabled={!results}
+                theme={theme}
+              />
+              <ThemeSwitcher />
+            </div>
           </div>
         </div>
       </div>
