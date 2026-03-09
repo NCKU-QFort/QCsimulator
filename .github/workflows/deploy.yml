@@ -1,9 +1,10 @@
-name: Deploy to GitHub Pages
+name: Build
 
 on:
   push:
-    branches: [ main ]
-  workflow_dispatch:
+    tags:
+      - 'v*.*.*'  # Triggers only on version tags (e.g., v1.0.0, v1.2.3)
+  workflow_dispatch:  # Allows manual trigger if needed
 
 permissions:
   contents: read
@@ -23,6 +24,14 @@ jobs:
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
+
+    - name: Display version
+      run: |
+        VERSION=$(jq -r .version package.json)
+        echo "🚀 Deploying version: $VERSION"
+        if [ -n "$GITHUB_REF_NAME" ]; then
+          echo "📌 Git tag: $GITHUB_REF_NAME"
+        fi
 
     - name: Setup Node.js
       uses: actions/setup-node@v4

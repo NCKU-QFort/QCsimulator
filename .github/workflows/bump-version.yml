@@ -1,0 +1,64 @@
+name: Bump Version
+
+on:
+  workflow_dispatch:
+    inputs:
+      bump_type:
+        description: 'Version bump type'
+        required: true
+        default: 'patch'
+        type: choice
+        options:
+          - major
+          - minor
+          - patch
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  bump-and-pr:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20.x
+
+      - name: Configure Git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Bump version
+        id: version
+        run: |
+          # Bump version in package.json and capture the new version
+          # npm version outputs the new version with 'v' prefix (e.g., v1.0.1)
+          NEW_VERSION=$(npm version ${{ inputs.bump_type }} --no-git-tag-version)
+          # Strip the 'v' prefix
+          NEW_VERSION=${NEW_VERSION#v}
+          echo "new_version=$NEW_VERSION" >> $GITHUB_OUTPUT
+          echo "Bumped version to v$NEW_VERSION"
+
+      - name: Create branch and commit
+        run: |
+          BRANCH_NAME="bump-v${{ steps.version.outputs.new_version }}"
+          git checkout -b $BRANCH_NAME
+          git add package.json package-lock.json
+          git commit -m "bump version to v${{ steps.version.outputs.new_version }}"
+          git push origin $BRANCH_NAME
+
+      - name: Create Pull Request
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh pr create \
+            --base main \
+            --head "bump-v${{ steps.version.outputs.new_version }}" \
+            --title "Bump version to v${{ steps.version.outputs.new_version }}" \
+            --body "This PR bumps the version to **v${{ steps.version.outputs.new_version }}**.

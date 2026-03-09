@@ -7,7 +7,7 @@ Interactive quantum circuit simulator for education.
 
 ## Build
 
-[![Deploy to GitHub Pages](https://github.com/NCKU-QFort/QCsimulator/actions/workflows/deploy.yml/badge.svg?branch=main)](https://github.com/NCKU-QFort/QCsimulator/actions/workflows/deploy.yml)
+[![Build](https://github.com/NCKU-QFort/QCsimulator/actions/workflows/deploy.yml/badge.svg?branch=main)](https://github.com/NCKU-QFort/QCsimulator/actions/workflows/deploy.yml)
 
 The following commands are for local build:
 

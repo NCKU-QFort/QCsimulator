@@ -1,4 +1,5 @@
 import { theme, counterButtonStyle, monospaceFontFamily } from "../utils.js";
+import pkg from "../../package.json";
 
 /**
  * Reusable counter control component: number of qubits, cbits, and steps
@@ -156,8 +157,8 @@ export function Header({ nq, nc, ns, shotsInput, setShotsInput, isShotsValid, ad
           >
             Quantum Circuit Simulator
           </div>
-          <div style={{ fontSize: 12, color: theme.textLight }}>
-            {"量子電路模擬器"}
+          <div style={{ fontSize: 14, color: theme.textLight }}>
+            量子電路模擬器 <span style={{ marginLeft: 10, fontFamily: monospaceFontFamily }}>ver. {pkg.version}</span>
           </div>
         </div>
       </div>
