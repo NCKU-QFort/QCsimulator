@@ -32,6 +32,18 @@ jobs:
             echo "✅ Tag $TAG_NAME does not exist yet"
           fi
 
+      - name: Get previous tag
+        if: steps.check_tag.outputs.exists == 'false'
+        id: prev_tag
+        run: |
+          PREV_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
+          echo "prev_tag=$PREV_TAG" >> $GITHUB_OUTPUT
+          if [ -n "$PREV_TAG" ]; then
+            echo "📌 Previous tag: $PREV_TAG"
+          else
+            echo "📌 No previous tag found (first release)"
+          fi
+
       - name: Create and push tag
         if: steps.check_tag.outputs.exists == 'false'
         run: |
@@ -50,9 +62,7 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           TAG_NAME="v${{ steps.version.outputs.version }}"
-          
-          # Get the previous tag
-          PREV_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
+          PREV_TAG="${{ steps.prev_tag.outputs.prev_tag }}"
           
           # Generate PR list
           if [ -n "$PREV_TAG" ]; then
