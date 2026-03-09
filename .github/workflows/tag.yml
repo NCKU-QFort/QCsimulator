@@ -1,4 +1,4 @@
-name: Create Tag from Version
+name: Create Tag and Release
 
 on:
   workflow_dispatch:  # Manual trigger only
@@ -43,7 +43,38 @@ jobs:
           git push origin "$TAG_NAME"
           
           echo "🏷️ Created and pushed tag: $TAG_NAME"
-          echo "🚀 This will trigger deployment to GitHub Pages"
+
+      - name: Create GitHub Release
+        if: steps.check_tag.outputs.exists == 'false'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TAG_NAME="v${{ steps.version.outputs.version }}"
+          
+          # Get the previous tag
+          PREV_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
+          
+          # Generate PR list
+          if [ -n "$PREV_TAG" ]; then
+            echo "📝 Getting PRs merged since $PREV_TAG..."
+            PR_LIST=$(gh pr list --state merged --base main --json number,title,mergedAt,url \
+              --jq "map(select(.mergedAt >= \"$(git log -1 --format=%aI $PREV_TAG)\")) | sort_by(.mergedAt) | map(\"- #\\(.number): \\(.title)\") | join(\"\\n\")")
+            
+            if [ -z "$PR_LIST" ]; then
+              RELEASE_NOTES="## QCsimulator ${TAG_NAME}"$'\n\n'"[Diff since ${PREV_TAG}](https://github.com/${{ github.repository }}/compare/${PREV_TAG}...${TAG_NAME})"$'\n\n'"**Merged pull requests:**"$'\n'"- No pull requests were merged in this release"
+            else
+              RELEASE_NOTES="## QCsimulator ${TAG_NAME}"$'\n\n'"[Diff since ${PREV_TAG}](https://github.com/${{ github.repository }}/compare/${PREV_TAG}...${TAG_NAME})"$'\n\n'"**Merged pull requests:**"$'\n'"${PR_LIST}"
+            fi
+          else
+            echo "📝 First release, no previous tag found"
+            RELEASE_NOTES="## QCsimulator ${TAG_NAME}"$'\n\n'"Initial release of Quantum Circuit Simulator."$'\n\n'"View all commits: https://github.com/${{ github.repository }}/commits/${TAG_NAME}"
+          fi
+          
+          # Create release
+          gh release create "$TAG_NAME" --title "${TAG_NAME}" --notes "$RELEASE_NOTES" --latest
+          
+          echo "📦 Created GitHub Release: $TAG_NAME"
+          echo "🚀 Deployment to GitHub Pages will be triggered automatically"
 
       - name: Tag already exists
         if: steps.check_tag.outputs.exists == 'true'
