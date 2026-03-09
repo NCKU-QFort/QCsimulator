@@ -30,29 +30,37 @@ function GateButton({ gate, gateKey, selected, onClick, isMobile, theme }) {
       style={
         isMobile
           ? {
-              padding: 0,
-              border: "none",
-              background: "transparent",
+              padding: 2,
+              borderRadius: 8,
+              border: `2px solid ${selected ? (isOtherOperation ? OTHER_OPERATION_BORDER : gate.color) : "transparent"}`,
+              background: selected ? theme.hover : "transparent",
+              boxShadow: selected
+                ? `0 0 0 1px ${isOtherOperation ? OTHER_OPERATION_BORDER : gate.color}55`
+                : "none",
               cursor: "pointer",
               display: "flex",
               alignItems: "center",
               fontFamily: "inherit",
+              transition: "all 0.15s",
             }
           : {
               width: "100%",
               padding: "7px 10px",
-              marginBottom: 3,
+              marginBottom: 0,
               borderRadius: 8,
-              border: isHovered && !selected
-                ? `1px solid ${isOtherOperation ? OTHER_OPERATION_BORDER : gate.color}60`
-                : selected
-                ? `2px solid ${isOtherOperation ? OTHER_OPERATION_BORDER : gate.color}`
-                : "1px solid transparent",
+              border: `2px solid ${selected
+                ? (isOtherOperation ? OTHER_OPERATION_BORDER : gate.color)
+                : isHovered
+                ? `${isOtherOperation ? OTHER_OPERATION_BORDER : gate.color}60`
+                : "transparent"}`,
               background: selected
                 ? isOtherOperation ? theme.hover : gate.bg
                 : isHovered
                 ? `${isOtherOperation ? OTHER_OPERATION_BORDER : gate.color}15`
                 : "transparent",
+              boxShadow: selected
+                ? `0 0 0 1.5px ${isOtherOperation ? OTHER_OPERATION_BORDER : gate.color}`
+                : "none",
               color: theme.text,
               cursor: "pointer",
               display: "flex",
@@ -61,6 +69,7 @@ function GateButton({ gate, gateKey, selected, onClick, isMobile, theme }) {
               fontFamily: "inherit",
               fontSize: 13,
               transition: "all 0.15s",
+              justifyContent: "center",
             }
       }
     >
@@ -94,9 +103,6 @@ function GateButton({ gate, gateKey, selected, onClick, isMobile, theme }) {
           renderGateLabel(gate.label)
         )}
       </span>
-      {!isMobile && (
-        <span style={{ fontSize: 12, color: theme.textMid }}>{gate.desc}</span>
-      )}
     </button>
   );
 }
@@ -183,7 +189,13 @@ export function GatePalette({ selGate, selectGate, pending, isMobile, showInstru
 
       <div style={{...OperationSectionLabelStyle, marginTop: 0}}>Single-Qubit Gates</div>
 
-      <div style={isMobile ? { display: "flex", flexWrap: "wrap", gap: 4, marginBottom: 8 } : {}}>
+      <div
+        style={
+          isMobile
+            ? { display: "flex", flexWrap: "wrap", gap: 4, marginBottom: 8 }
+            : { display: "grid", gridTemplateColumns: "repeat(3, minmax(0, 1fr))", gap: 6, paddingLeft: 6 }
+        }
+      >
         {SINGLE_QUBIT_GATES.map((g) => (
           <GateButton
             key={g}
@@ -199,7 +211,13 @@ export function GatePalette({ selGate, selectGate, pending, isMobile, showInstru
 
       <div style={{ ...OperationSectionLabelStyle, marginTop: isMobile ? 4 : 16 }}>Multi-Qubit Gates</div>
 
-      <div style={isMobile ? { display: "flex", flexWrap: "wrap", gap: 4, marginBottom: 8 } : {}}>
+      <div
+        style={
+          isMobile
+            ? { display: "flex", flexWrap: "wrap", gap: 4, marginBottom: 8 }
+            : { display: "grid", gridTemplateColumns: "repeat(3, minmax(0, 1fr))", gap: 6, paddingLeft: 6 }
+        }
+      >
         {MULTI_QUBIT_GATES.map((g) => (
           <GateButton
             key={g}
@@ -215,7 +233,13 @@ export function GatePalette({ selGate, selectGate, pending, isMobile, showInstru
 
       <div style={{ ...OperationSectionLabelStyle, marginTop: isMobile ? 4 : 16 }}>Other Operations</div>
 
-      <div style={isMobile ? { display: "flex", gap: 4 } : {}}>
+      <div
+        style={
+          isMobile
+            ? { display: "flex", gap: 4 }
+            : { display: "grid", gridTemplateColumns: "repeat(3, minmax(0, 1fr))", gap: 6, paddingLeft: 6 }
+        }
+      >
         <GateButton
           gate={{ label: "Del", desc: "Delete" }}
           gateKey="DEL"
