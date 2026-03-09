@@ -197,7 +197,7 @@ export function runSim(nq, nc, circ, ns) {
         const measurement = measureQubit(st, q, nq);
         st = measurement.state;
         
-        // Apply measurement error: 0.5% chance to flip the result
+        // Apply measurement error
         let result = measurement.result;
         if (Math.random() < MEASUREMENT_ERROR_RATE) {
           result = result === 0 ? 1 : 0;

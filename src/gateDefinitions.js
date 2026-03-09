@@ -39,7 +39,7 @@ export const GATE_DEFS = {
     label: "I",
     color: LOGICAL_GATE_COLOR,
     bg: LOGICAL_GATE_BG,
-    desc: "Identity",
+    desc: "Identity gate",
     qubits: 1,
   },
   H: {
@@ -56,7 +56,7 @@ export const GATE_DEFS = {
     label: "H",
     color: HADAMARD_GATE_COLOR,
     bg: HADAMARD_GATE_BG,
-    desc: "Hadamard",
+    desc: "Hadamard gate",
     qubits: 1,
   },
   X: {
@@ -73,7 +73,7 @@ export const GATE_DEFS = {
     label: "⊕",
     color: LOGICAL_GATE_COLOR,
     bg: LOGICAL_GATE_BG,
-    desc: "Pauli-X",
+    desc: "Pauli-X gate",
     qubits: 1,
   },
   SX: {
@@ -90,7 +90,7 @@ export const GATE_DEFS = {
     label: "√X",
     color: OTHER_GATE_COLOR,
     bg: OTHER_GATE_BG,
-    desc: "SX",
+    desc: "square-root-of-X gate",
     qubits: 1,
   },
   SXdg: {
@@ -107,7 +107,7 @@ export const GATE_DEFS = {
     label: "√X†",
     color: OTHER_GATE_COLOR,
     bg: OTHER_GATE_BG,
-    desc: "SXdg",
+    desc: "square-root-of-X (dagger) gate",
     qubits: 1,
   },
   Y: {
@@ -124,7 +124,7 @@ export const GATE_DEFS = {
     label: "Y",
     color: OTHER_GATE_COLOR,
     bg: OTHER_GATE_BG,
-    desc: "Pauli-Y",
+    desc: "Pauli-Y gate",
     qubits: 1,
   },
   Z: {
@@ -141,7 +141,7 @@ export const GATE_DEFS = {
     label: "Z",
     color: PHASE_GATE_COLOR,
     bg: PHASE_GATE_BG,
-    desc: "Pauli-Z",
+    desc: "Pauli-Z gate",
     qubits: 1,
   },
   S: {
@@ -158,7 +158,7 @@ export const GATE_DEFS = {
     label: "S",
     color: PHASE_GATE_COLOR,
     bg: PHASE_GATE_BG,
-    desc: "Phase(π/2)",
+    desc: "Phase (π/2) gate",
     qubits: 1,
   },
   Sdg: {
@@ -175,7 +175,7 @@ export const GATE_DEFS = {
     label: "S†",
     color: PHASE_GATE_COLOR,
     bg: PHASE_GATE_BG,
-    desc: "Phase(-π/2)",
+    desc: "Phase (-π/2) gate",
     qubits: 1,
   },
   T: {
@@ -192,7 +192,7 @@ export const GATE_DEFS = {
     label: "T",
     color: PHASE_GATE_COLOR,
     bg: PHASE_GATE_BG,
-    desc: "Phase(π/4)",
+    desc: "Phase (π/4) gate",
     qubits: 1,
   },
   Tdg: {
@@ -209,28 +209,28 @@ export const GATE_DEFS = {
     label: "T†",
     color: PHASE_GATE_COLOR,
     bg: PHASE_GATE_BG,
-    desc: "Phase(-π/4)",
+    desc: "Phase (-π/4) gate",
     qubits: 1,
   },
   CNOT: {
     label: "CX",
     color: LOGICAL_GATE_COLOR,
     bg: LOGICAL_GATE_BG,
-    desc: "CNOT",
+    desc: "controlled-X gate",
     qubits: 2,
   },
   CZ: {
     label: "CZ",
     color: PHASE_GATE_COLOR,
     bg: PHASE_GATE_BG,
-    desc: "CZ",
+    desc: "controlled-Z gate",
     qubits: 2,
   },
   SWAP: {
     label: "SW",
     color: LOGICAL_GATE_COLOR,
     bg: LOGICAL_GATE_BG,
-    desc: "SWAP",
+    desc: "SWAP gate",
     qubits: 2,
   },
 };
