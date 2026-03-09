@@ -244,7 +244,7 @@ export default function App() {
 
       const link = document.createElement("a");
       link.href = dataUrl;
-      link.download = `quantum-circuit-${Date.now()}.${format}`;
+      link.download = `circuit-${Date.now()}.${format}`;
       link.click();
     } catch (error) {
       console.error(`Failed to export circuit as ${format.toUpperCase()}:`, error);
@@ -280,7 +280,7 @@ export default function App() {
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;
-    link.download = `quantum-data-${Date.now()}.json`;
+    link.download = `data-${Date.now()}.json`;
     link.click();
     URL.revokeObjectURL(url);
   };
