@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { GATE_DEFS } from "../gateDefinitions.js";
-import { makeKey } from "../utils.js";
+import { makeKey, MAX_QUBITS, MAX_STEPS } from "../utils.js";
 
 /**
  * Hook for managing quantum circuit state and operations
@@ -65,7 +65,7 @@ export function useCircuitState(nc = 1) {
   };
 
   const addQ = () => {
-    if (nq < 10) {
+    if (nq < MAX_QUBITS) {
       setNq((n) => n + 1);
     }
   };
@@ -92,7 +92,7 @@ export function useCircuitState(nc = 1) {
     }
   };
 
-  const addS = () => setNs((s) => Math.min(s + 1, 30));
+  const addS = () => setNs((s) => Math.min(s + 1, MAX_STEPS));
 
   const rmS = () => {
     if (ns > 1) {
@@ -134,7 +134,13 @@ export function useCircuitState(nc = 1) {
   };
 
   const handleClick = (q, s) => {
+    // If no gate is selected, do nothing
     if (!selGate) {
+      return;
+    }
+
+    // Handle deletion when DEL is selected
+    if (selGate === "DEL") {
       const k = makeKey(q, s);
       const ex = circ[k];
 

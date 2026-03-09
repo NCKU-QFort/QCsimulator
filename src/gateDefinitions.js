@@ -6,7 +6,7 @@ const HALF = 0.5;
 export const SINGLE_QUBIT_GATES = ["H", "X", "I", "Z", "S", "Sdg", "T", "Tdg", "SX", "SXdg", "Y"];
 export const MULTI_QUBIT_GATES = ["CNOT", "SWAP", "CZ"];
 
-// Reusable operation category colors (M, IF)
+// Reusable operation category colors (M, IF, DEL)
 export const OTHER_OPERATION_COLOR = "#000000";
 export const OTHER_OPERATION_BG = "#A2A9B0";
 export const OTHER_OPERATION_HOVER_BG = "#929AA0";

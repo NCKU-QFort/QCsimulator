@@ -106,7 +106,7 @@ export function useSimulation(nq, nc, circ, ns) {
     return results
       .map((p, i) => ({
         state: basisLabel(i, resultBitCount),
-        probability: Math.round(p * 10000) / 10000,
+        probability: Math.round(p * 10000) / 10000, // round to four decimal 
         count: shotCounts[i] || 0,
       }));
   }, [results, resultBitCount, isMeasurementResult, shotCounts]);
