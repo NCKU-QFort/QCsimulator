@@ -173,7 +173,7 @@ function UsageInstructions({ expanded, onToggle }) {
           marginBottom: expanded ? 4 : 0,
         }}
       >
-        <span>{"說明"} Instructions</span>
+        <span>Instructions {"說明"}</span>
         <span style={{ color: theme.textLight, fontSize: 10 }}>{expanded ? "▲" : "▼"}</span>
       </button>
 
@@ -206,7 +206,18 @@ export function GatePalette({ selGate, selectGate, pending, isMobile, showInstru
         />
       )}
 
-      <div style={{...secLbl, marginTop: showInstructions ? 16 : 0}}>Single-Qubit Gates</div>
+      <div style={{
+        fontSize: 12,
+        fontWeight: 600,
+        color: theme.text,
+        letterSpacing: "0.05em",
+        marginTop: showInstructions ? 16 : 0,
+        marginBottom: 10,
+      }}>
+        Operations 操作 :
+      </div>
+
+      <div style={{...secLbl, marginTop: 0}}>Single-Qubit Gates</div>
 
       <div style={isMobile ? { display: "flex", flexWrap: "wrap", gap: 4, marginBottom: 8 } : {}}>
         {SINGLE_QUBIT_GATES.map((g) => (

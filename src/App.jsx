@@ -38,7 +38,7 @@ export default function App() {
   } = circuitState;
 
   const simulation = useSimulation(nq, nc, circ, ns);
-  const { results, sv, cbits, showSv, chartData, run, clear: clearResults, setShowSv } = simulation;
+  const { results, sv, cbits, showSv, chartData, shotsExecuted, run, clear: clearResults, setShowSv } = simulation;
 
   const isShotsValid = /^\d+$/.test(shotsInput) && Number(shotsInput) >= 1 && Number(shotsInput) <= 100000;
 
@@ -368,6 +368,7 @@ export default function App() {
               nq={nq}
               nc={nc}
               isMobile={isMobile}
+              shotsExecuted={shotsExecuted}
             />
           </div>
 

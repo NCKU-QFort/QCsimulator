@@ -43,7 +43,6 @@ export const secLbl = {
   fontSize: 10,
   fontWeight: 600,
   color: "#94A3B8",
-  textTransform: "uppercase",
   letterSpacing: "0.08em",
   marginBottom: 6,
 };

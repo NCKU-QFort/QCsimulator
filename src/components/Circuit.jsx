@@ -436,7 +436,7 @@ function QubitWire({ q, ns, circ, selGate, pending, hovered, handleClick, setHov
           flexShrink: 0,
         }}
       >
-        q<sub style={{ fontSize: isMobile ? 8 : 10 }}>{q}</sub>
+        q[{q}]
       </div>
 
       <div style={{ display: "flex", position: "relative", marginLeft: 5 }}>

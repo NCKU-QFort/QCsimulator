@@ -4,7 +4,7 @@ import { theme, cAbs2, basisLabelKet } from "../utils.js";
 /**
  * Probability bar chart component
  */
-function ProbabilityChart({ chartData, nq, isMobile }) {
+function ProbabilityChart({ chartData, nq, isMobile, shotsExecuted }) {
   return (
     <div style={{ height: isMobile ? 130 : 165 }}>
       <ResponsiveContainer width="100%" height="100%">
@@ -112,7 +112,7 @@ function StateVector({ sv, nq, isMobile }) {
 /**
  * Results panel component showing probabilities and state vector
  */
-export function ResultsPanel({ results, sv, cbits, showSv, setShowSv, chartData, nq, nc, isMobile }) {
+export function ResultsPanel({ results, sv, cbits, showSv, setShowSv, chartData, nq, nc, isMobile, shotsExecuted }) {
   if (!results) {
     return (
       <div style={{ fontSize: isMobile ? 12 : 13, color: theme.textLight, textAlign: "center", padding: 6 }}>
@@ -133,8 +133,13 @@ export function ResultsPanel({ results, sv, cbits, showSv, setShowSv, chartData,
           gap: 6,
         }}
       >
-        <div style={{ fontSize: isMobile ? 12 : 14, fontWeight: 600, color: theme.text }}>
-          Probabilities <span style={{ color: theme.textLight, fontWeight: 400, fontSize: 11 }}>— 量測機率</span>
+        <div>
+          <div style={{ fontSize: isMobile ? 14 : 16, fontWeight: 600, color: theme.text }}>
+            Probabilities <span style={{ color: theme.textLight, fontWeight: 400, fontSize: 12 }}>— 量測機率</span>
+          </div>
+          <div style={{ fontSize: 12, color: theme.textMid, marginTop: 2 }}>
+            (% of {shotsExecuted} shots)
+          </div>
         </div>
 
         <button
@@ -155,7 +160,7 @@ export function ResultsPanel({ results, sv, cbits, showSv, setShowSv, chartData,
         </button>
       </div>
 
-      <ProbabilityChart chartData={chartData} nq={nq} isMobile={isMobile} />
+      <ProbabilityChart chartData={chartData} nq={nq} isMobile={isMobile} shotsExecuted={shotsExecuted} />
 
       {showSv && <StateVector sv={sv} nq={nq} isMobile={isMobile} />}
     </div>
