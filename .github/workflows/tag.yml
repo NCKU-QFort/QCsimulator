@@ -1,0 +1,52 @@
+name: Create Tag from Version
+
+on:
+  workflow_dispatch:  # Manual trigger only
+
+permissions:
+  contents: write
+
+jobs:
+  tag:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Get current version
+        id: version
+        run: |
+          CURR_VERSION=$(jq -r .version package.json)
+          echo "version=$CURR_VERSION" >> $GITHUB_OUTPUT
+          echo "📦 Current version: $CURR_VERSION"
+
+      - name: Check if tag exists
+        id: check_tag
+        run: |
+          TAG_NAME="v${{ steps.version.outputs.version }}"
+          if git ls-remote --tags origin | grep -q "refs/tags/$TAG_NAME$"; then
+            echo "exists=true" >> $GITHUB_OUTPUT
+            echo "⚠️ Tag $TAG_NAME already exists"
+          else
+            echo "exists=false" >> $GITHUB_OUTPUT
+            echo "✅ Tag $TAG_NAME does not exist yet"
+          fi
+
+      - name: Create and push tag
+        if: steps.check_tag.outputs.exists == 'false'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          
+          TAG_NAME="v${{ steps.version.outputs.version }}"
+          git tag "$TAG_NAME"
+          git push origin "$TAG_NAME"
+          
+          echo "🏷️ Created and pushed tag: $TAG_NAME"
+          echo "🚀 This will trigger deployment to GitHub Pages"
+
+      - name: Tag already exists
+        if: steps.check_tag.outputs.exists == 'true'
+        run: |
+          echo "❌ Cannot create tag v${{ steps.version.outputs.version }} - it already exists"
+          exit 1
