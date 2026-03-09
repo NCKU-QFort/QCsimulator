@@ -2,6 +2,7 @@
 
 [![](https://img.shields.io/badge/Start-Click%20Here%20to%20Begin-brightgreen?style=for-the-badge&logo=starship&logoColor=white)](https://ncku-qfort.github.io/QCsimulator/)
 
+[![Release](https://img.shields.io/github/release/NCKU-QFort/QCsimulator.svg)](https://github.com/NCKU-QFort/QCsimulator/releases)
 [![Build](https://github.com/NCKU-QFort/QCsimulator/actions/workflows/deploy.yml/badge.svg?branch=main)](https://github.com/NCKU-QFort/QCsimulator/actions/workflows/deploy.yml)
 
 Interactive quantum circuit simulator for education.  
