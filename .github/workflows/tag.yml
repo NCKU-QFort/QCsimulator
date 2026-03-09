@@ -74,7 +74,7 @@ jobs:
           gh release create "$TAG_NAME" --title "${TAG_NAME}" --notes "$RELEASE_NOTES" --latest
           
           echo "📦 Created GitHub Release: $TAG_NAME"
-          echo "🚀 This will trigger the deployment workflow"
+          echo "🚀 Deployment will start automatically"
 
       - name: Tag already exists
         if: steps.check_tag.outputs.exists == 'true'
