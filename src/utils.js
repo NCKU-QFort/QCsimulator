@@ -22,7 +22,7 @@ export const theme = {
 // COMMON STYLES
 // =============================================================================
 
-export const btnC = {
+export const counterButtonStyle = {
   width: 20,
   height: 20,
   borderRadius: 4,
@@ -39,14 +39,15 @@ export const btnC = {
   fontWeight: 500,
 };
 
-export const secLbl = {
+export const OperationSectionLabelStyle = {
   fontSize: 10,
   fontWeight: 600,
   color: "#94A3B8",
-  textTransform: "uppercase",
   letterSpacing: "0.08em",
   marginBottom: 6,
 };
+
+export const monospaceFontFamily = "'Source Code Pro',monospace";
 
 // =============================================================================
 // COMPLEX MATH
@@ -102,3 +103,39 @@ export function basisLabelKet(i, n) {
   const binary = i.toString(2).padStart(n, "0");
   return `|${binary}⟩`;
 }
+
+// =============================================================================
+// CIRCUIT HELPERS
+// =============================================================================
+
+/**
+ * Generate a circuit key from qubit and step indices
+ * @param {number} q - Qubit index
+ * @param {number} s - Step index
+ * @returns {string} Circuit key (e.g., "0-1")
+ */
+export const makeKey = (q, s) => `${q}-${s}`;
+
+/**
+ * Parse a circuit key into qubit and step indices
+ * @param {string} key - Circuit key (e.g., "0-1")
+ * @returns {[number, number]} [qubit, step]
+ */
+export const parseKey = (key) => key.split('-').map(Number);
+
+/**
+ * Calculate the center X position of a cell in the circuit grid
+ * @param {number} step - Step index (1-based)
+ * @param {number} CW - Cell width
+ * @param {number} LBL_W - Label width
+ * @returns {number} X position in pixels
+ */
+export const getCellCenterX = (step, CW, LBL_W) => LBL_W + 5 + (step - 1) * CW + CW / 2;
+
+/**
+ * Calculate the center Y position of a qubit wire
+ * @param {number} q - Qubit index
+ * @param {number} CH - Cell height
+ * @returns {number} Y position in pixels
+ */
+export const getCellCenterY = (q, CH) => q * CH + CH / 2;

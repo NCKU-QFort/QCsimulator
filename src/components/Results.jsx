@@ -1,10 +1,10 @@
 import { Bar, BarChart, Cell, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
-import { theme, cAbs2, basisLabelKet } from "../utils.js";
+import { theme, cAbs2, basisLabelKet, monospaceFontFamily } from "../utils.js";
 
 /**
  * Probability bar chart component
  */
-function ProbabilityChart({ chartData, nq, isMobile }) {
+function ProbabilityChart({ chartData, nq, isMobile, shotsExecuted }) {
   return (
     <div style={{ height: isMobile ? 130 : 165 }}>
       <ResponsiveContainer width="100%" height="100%">
@@ -14,7 +14,7 @@ function ProbabilityChart({ chartData, nq, isMobile }) {
             tick={{
               fontSize: nq > 4 ? 8 : isMobile ? 9 : 11,
               fill: theme.textMid,
-              fontFamily: "'Source Code Pro',monospace",
+              fontFamily: monospaceFontFamily,
             }}
             interval={0}
             angle={nq > 4 ? -45 : 0}
@@ -33,7 +33,7 @@ function ProbabilityChart({ chartData, nq, isMobile }) {
               border: `1px solid ${theme.border}`,
               borderRadius: 6,
               fontSize: 11,
-              fontFamily: "'Source Code Pro',monospace",
+              fontFamily: monospaceFontFamily,
               boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
             }}
             formatter={(v, name, props) => {
@@ -74,7 +74,7 @@ function StateVector({ sv, nq, isMobile }) {
         borderRadius: 6,
         maxHeight: isMobile ? 100 : 130,
         overflowY: "auto",
-        fontFamily: "'Source Code Pro',monospace",
+        fontFamily: monospaceFontFamily,
         fontSize: isMobile ? 10 : 12,
         border: `1px solid ${theme.borderLight}`,
       }}
@@ -112,7 +112,7 @@ function StateVector({ sv, nq, isMobile }) {
 /**
  * Results panel component showing probabilities and state vector
  */
-export function ResultsPanel({ results, sv, cbits, showSv, setShowSv, chartData, nq, nc, isMobile }) {
+export function ResultsPanel({ results, sv, cbits, showSv, setShowSv, chartData, nq, nc, isMobile, shotsExecuted }) {
   if (!results) {
     return (
       <div style={{ fontSize: isMobile ? 12 : 13, color: theme.textLight, textAlign: "center", padding: 6 }}>
@@ -133,8 +133,13 @@ export function ResultsPanel({ results, sv, cbits, showSv, setShowSv, chartData,
           gap: 6,
         }}
       >
-        <div style={{ fontSize: isMobile ? 12 : 14, fontWeight: 600, color: theme.text }}>
-          Probabilities <span style={{ color: theme.textLight, fontWeight: 400, fontSize: 11 }}>— 量測機率</span>
+        <div>
+          <div style={{ fontSize: isMobile ? 14 : 16, fontWeight: 600, color: theme.text }}>
+            Probabilities <span style={{ color: theme.textLight, fontWeight: 400, fontSize: 12 }}>— 量測機率</span>
+          </div>
+          <div style={{ fontSize: 12, color: theme.textMid, marginTop: 2 }}>
+            (% of {shotsExecuted} shots)
+          </div>
         </div>
 
         <button
@@ -155,7 +160,7 @@ export function ResultsPanel({ results, sv, cbits, showSv, setShowSv, chartData,
         </button>
       </div>
 
-      <ProbabilityChart chartData={chartData} nq={nq} isMobile={isMobile} />
+      <ProbabilityChart chartData={chartData} nq={nq} isMobile={isMobile} shotsExecuted={shotsExecuted} />
 
       {showSv && <StateVector sv={sv} nq={nq} isMobile={isMobile} />}
     </div>
