@@ -6,11 +6,11 @@ const HALF = 0.5;
 export const SINGLE_QUBIT_GATES = ["H", "X", "I", "Z", "S", "Sdg", "T", "Tdg", "SX", "SXdg", "Y"];
 export const MULTI_QUBIT_GATES = ["CNOT", "SWAP", "CZ"];
 
-// Reusable operation category colors
-export const OTHER_OPERATION_COLOR = "#888";
-export const OTHER_OPERATION_BG = "#F1F5F9";
-export const OTHER_OPERATION_HOVER_BG = "#E2E8F0";
-export const OTHER_OPERATION_BORDER = "#CBD5E1";
+// Reusable operation category colors (M, IF)
+export const OTHER_OPERATION_COLOR = "#000000";
+export const OTHER_OPERATION_BG = "#A2A9B0";
+export const OTHER_OPERATION_HOVER_BG = "#929AA0";
+export const OTHER_OPERATION_BORDER = "#828990";
 
 export const PHASE_GATE_COLOR = "#0D9488";
 export const PHASE_GATE_BG = "#F0FDFA";

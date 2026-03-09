@@ -1,10 +1,10 @@
 import { Bar, BarChart, Cell, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
-import { theme, cAbs2, basisLabelKet, monospaceFontFamily } from "../utils.js";
+import { cAbs2, basisLabelKet, monospaceFontFamily } from "../utils.js";
 
 /**
  * Probability bar chart component
  */
-function ProbabilityChart({ chartData, nq, isMobile, shotsExecuted }) {
+function ProbabilityChart({ chartData, nq, isMobile, shotsExecuted, theme }) {
   return (
     <div style={{ height: isMobile ? 130 : 165 }}>
       <ResponsiveContainer width="100%" height="100%">
@@ -35,6 +35,13 @@ function ProbabilityChart({ chartData, nq, isMobile, shotsExecuted }) {
               fontSize: 11,
               fontFamily: monospaceFontFamily,
               boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
+              color: theme.text,
+            }}
+            labelStyle={{
+              color: theme.text,
+            }}
+            itemStyle={{
+              color: theme.text,
             }}
             formatter={(v, name, props) => {
               if (name === "probability") {
@@ -62,7 +69,7 @@ function ProbabilityChart({ chartData, nq, isMobile, shotsExecuted }) {
 /**
  * State vector display component
  */
-function StateVector({ sv, nq, isMobile }) {
+function StateVector({ sv, nq, isMobile, theme }) {
   if (!sv) return null;
 
   return (
@@ -112,7 +119,7 @@ function StateVector({ sv, nq, isMobile }) {
 /**
  * Results panel component showing probabilities and state vector
  */
-export function ResultsPanel({ results, sv, cbits, showSv, setShowSv, chartData, nq, nc, isMobile, shotsExecuted }) {
+export function ResultsPanel({ results, sv, cbits, showSv, setShowSv, chartData, nq, nc, isMobile, shotsExecuted, theme }) {
   if (!results) {
     return (
       <div style={{ fontSize: isMobile ? 12 : 13, color: theme.textLight, textAlign: "center", padding: 6 }}>
@@ -160,9 +167,9 @@ export function ResultsPanel({ results, sv, cbits, showSv, setShowSv, chartData,
         </button>
       </div>
 
-      <ProbabilityChart chartData={chartData} nq={nq} isMobile={isMobile} shotsExecuted={shotsExecuted} />
+      <ProbabilityChart chartData={chartData} nq={nq} isMobile={isMobile} shotsExecuted={shotsExecuted} theme={theme} />
 
-      {showSv && <StateVector sv={sv} nq={nq} isMobile={isMobile} />}
+      {showSv && <StateVector sv={sv} nq={nq} isMobile={isMobile} theme={theme} />}
     </div>
   );
 }

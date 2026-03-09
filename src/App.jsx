@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { theme, monospaceFontFamily } from "./utils.js";
+import { monospaceFontFamily } from "./utils.js";
+import { useTheme } from "./components/ThemeContext.jsx";
 import { GATE_DEFS, OTHER_OPERATION_COLOR, OTHER_OPERATION_BG, OTHER_OPERATION_BORDER } from "./gateDefinitions.js";
 import { useIsMobile } from "./hooks/useIsMobile.js";
 import { useCircuitState } from "./hooks/useCircuitState.js";
@@ -11,7 +12,69 @@ import { CircuitGrid } from "./components/Circuit.jsx";
 import { ResultsPanel } from "./components/Results.jsx";
 import { PlusCircle } from "./components/CircuitHelpers.jsx";
 
+/**
+ * Sun icon for light mode
+ */
+function SunIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="12" r="5" />
+      <line x1="12" y1="1" x2="12" y2="3" />
+      <line x1="12" y1="21" x2="12" y2="23" />
+      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
+      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
+      <line x1="1" y1="12" x2="3" y2="12" />
+      <line x1="21" y1="12" x2="23" y2="12" />
+      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
+      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
+    </svg>
+  );
+}
+
+/**
+ * Moon icon for dark mode
+ */
+function MoonIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+    </svg>
+  );
+}
+
+/**
+ * Theme switcher button component
+ */
+function ThemeSwitcher() {
+  const { theme, isDark, toggleTheme } = useTheme();
+  
+  return (
+    <button
+      onClick={toggleTheme}
+      style={{
+        width: 36,
+        height: 36,
+        borderRadius: 8,
+        border: `1px solid ${theme.border}`,
+        background: theme.surface,
+        color: theme.text,
+        cursor: "pointer",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        transition: "all 0.2s ease",
+        flexShrink: 0,
+      }}
+      aria-label={isDark ? "Switch to light mode" : "Switch to dark mode"}
+      title={isDark ? "Switch to light mode" : "Switch to dark mode"}
+    >
+      {isDark ? <SunIcon /> : <MoonIcon />}
+    </button>
+  );
+}
+
 export default function App() {
+  const { theme } = useTheme();
   const isMobile = useIsMobile();
   const [showPalette, setShowPalette] = useState(false);
   const [nc, setNc] = useState(2); // Number of classical bits
@@ -148,6 +211,8 @@ export default function App() {
         ::-webkit-scrollbar-track{background:${theme.bg};}
         ::-webkit-scrollbar-thumb{background:${theme.border};border-radius:3px;}
         button:active{transform:scale(0.97);}
+        a{color:#4B92F6;text-decoration:none;}
+        a:hover{text-decoration:underline;}
       `}</style>
 
       {/* Header */}
@@ -223,6 +288,7 @@ export default function App() {
                 pending={pending}
                 isMobile={isMobile}
                 showInstructions={false}
+                theme={theme}
               />
               </div>
             </div>
@@ -261,6 +327,7 @@ export default function App() {
                 pending={pending}
                 isMobile={isMobile}
                 showInstructions={true}
+                theme={theme}
               />
             </div>
           </div>
@@ -296,9 +363,9 @@ export default function App() {
               width: "100%",
               height: 34,
               padding: "0 12px",
-              background: "#FEF3C7",
-              borderBottom: "1px solid #F59E0B",
-              color: "#92400E",
+              background: theme.instructionBg,
+              borderBottom: `1px solid ${theme.instructionBorder}`,
+              color: theme.instructionText,
               textAlign: "left",
               display: "flex",
               alignItems: "center",
@@ -331,6 +398,7 @@ export default function App() {
             removePendingIf={removePendingIf}
             setHovered={setHovered}
             isMobile={isMobile}
+            theme={theme}
           />
 
           {/* Results Panel */}
@@ -355,6 +423,7 @@ export default function App() {
               nc={nc}
               isMobile={isMobile}
               shotsExecuted={shotsExecuted}
+              theme={theme}
             />
           </div>
 
@@ -365,14 +434,20 @@ export default function App() {
               background: theme.surface,
               padding: isMobile ? "12px" : "16px 24px",
               flexShrink: 0,
-              textAlign: "center",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
               fontSize: isMobile ? 10 : 11,
               color: theme.textLight,
               lineHeight: 1.6,
+              gap: 16,
             }}
           >
-            <div>Copyright © 2026 Center for Quantum Frontiers of Research & Technology (QFort), All Rights Reserved.</div>
-            <div>Designed by Yi-Te Huang and Po-Chen Kuo</div>
+            <div style={{ textAlign: "left", flex: 1 }}>
+              <div>Copyright © 2026 <a href="https://qfort.ncku.edu.tw/">Center for Quantum Frontiers of Research & Technology (QFort)</a>, All Rights Reserved.</div>
+              <div>Designed by Yi-Te Huang and Po-Chen Kuo</div>
+            </div>
+            <ThemeSwitcher />
           </div>
         </div>
       </div>
