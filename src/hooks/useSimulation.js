@@ -116,6 +116,7 @@ export function useSimulation(nq, nc, circ, ns) {
     results,
     shotCounts,
     shotsExecuted,
+    isMeasurementResult,
     sv,
     cbits,
     showSv,

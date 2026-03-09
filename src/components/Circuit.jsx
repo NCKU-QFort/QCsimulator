@@ -937,6 +937,7 @@ export function CircuitGrid({
   setHovered,
   isMobile,
   theme,
+  circuitRef,
 }) {
   const CH = isMobile ? 48 : 58;
   const CW = isMobile ? 48 : 58;
@@ -944,14 +945,13 @@ export function CircuitGrid({
 
   return (
     <div
+      ref={circuitRef}
       style={{
-        flex: 1,
-        overflow: "auto",
+        display: "inline-block",
         padding: isMobile ? "12px 8px 8px" : "20px 20px 10px",
-        WebkitOverflowScrolling: "touch",
       }}
     >
-      <div style={{ display: "inline-block", minWidth: "100%" }}>
+      <div>
         {/* Step numbers header */}
         <div style={{ display: "flex", marginLeft: LBL_W + 5, marginBottom: 4 }}>
           {Array.from({ length: ns }, (_, stepIndex) => {
