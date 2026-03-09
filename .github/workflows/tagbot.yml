@@ -1,0 +1,44 @@
+name: Create Tag and Release
+
+on:
+  workflow_dispatch:  # Manual trigger only
+
+permissions:
+  contents: write
+
+jobs:
+  tag:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Need full history for release notes
+
+      - name: Get current version
+        id: version
+        run: |
+          CURR_VERSION=$(jq -r .version package.json)
+          echo "version=$CURR_VERSION" >> $GITHUB_OUTPUT
+          echo "📦 Current version: $CURR_VERSION"
+
+      - name: Check if tag exists
+        id: check_tag
+        run: |
+          TAG_NAME="v${{ steps.version.outputs.version }}"
+          if git ls-remote --tags origin | grep -q "refs/tags/$TAG_NAME$"; then
+            echo "exists=true" >> $GITHUB_OUTPUT
+            echo "❌ Tag $TAG_NAME already exists - cannot proceed"
+            exit 1
+          else
+            echo "exists=false" >> $GITHUB_OUTPUT
+            echo "✅ Tag $TAG_NAME does not exist yet"
+          fi
+
+      - name: Create GitHub Release
+        uses: ncipollo/release-action@v1
+        with:
+          tag: "v${{ steps.version.outputs.version }}"
+          name: "v${{ steps.version.outputs.version }}"
+          generateReleaseNotes: true
+          makeLatest: true
