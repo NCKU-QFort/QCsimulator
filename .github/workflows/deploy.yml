@@ -1,9 +1,8 @@
 name: Build
 
 on:
-  push:
-    tags:
-      - 'v*.*.*'  # Triggers only on version tags (e.g., v1.0.0, v1.2.3)
+  release:
+    types: [published]  # Triggers when a GitHub Release is published
   workflow_dispatch:  # Allows manual trigger if needed
 
 permissions:
@@ -29,8 +28,9 @@ jobs:
       run: |
         VERSION=$(jq -r .version package.json)
         echo "🚀 Deploying version: $VERSION"
-        if [ -n "$GITHUB_REF_NAME" ]; then
-          echo "📌 Git tag: $GITHUB_REF_NAME"
+        if [ -n "${{ github.event.release.tag_name }}" ]; then
+          echo "📦 Release: ${{ github.event.release.tag_name }}"
+          echo "🔗 Release URL: ${{ github.event.release.html_url }}"
         fi
 
     - name: Setup Node.js
