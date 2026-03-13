@@ -65,34 +65,46 @@ export function PlusCircle({ size, color, preview = false }) {
  * Renders a measurement arrow (dashed line + arrowhead)
  */
 export function MeasurementArrow({ centerX, top, bottom, color, measurementArrowHeight = 9 }) {
+  const lineHeight = Math.max(0, bottom - top - measurementArrowHeight);
+  
   return (
     <>
-      {/* Dashed line */}
-      <div
+      {/* Dashed line using SVG for consistent rendering across devices */}
+      <svg
         style={{
           position: "absolute",
-          left: centerX,
+          left: centerX - 1.25,
           top,
-          width: 0,
-          height: Math.max(0, bottom - top - measurementArrowHeight),
-          background: "transparent",
-          borderLeft: `2.5px dashed ${color}`,
-          zIndex: 2,
+          width: 2.5,
+          height: lineHeight,
+          zIndex: 0,
           pointerEvents: "none",
+          overflow: "visible",
         }}
-      />
+      >
+        <line
+          x1="1.25"
+          y1="0"
+          x2="1.25"
+          y2={lineHeight}
+          stroke={color}
+          strokeWidth="2"
+          strokeDasharray="6 4"
+          strokeLinecap="round"
+        />
+      </svg>
       {/* Arrowhead pointing to classical wire */}
       <div
         style={{
           position: "absolute",
-          left: centerX - 4.75,
+          left: centerX - 5.8,
           top: bottom - measurementArrowHeight,
           width: 0,
           height: 0,
           borderLeft: "6px solid transparent",
           borderRight: "6px solid transparent",
           borderTop: `9px solid ${color}`,
-          zIndex: 3,
+          zIndex: 1,
           pointerEvents: "none",
         }}
       />
