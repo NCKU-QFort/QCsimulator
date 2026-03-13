@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Bar, BarChart, Cell, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { cAbs2, basisLabelKet, monospaceFontFamily } from "../utils.js";
 
@@ -119,7 +120,7 @@ function StateVector({ sv, nq, isMobile, theme }) {
 /**
  * Results panel component showing probabilities and state vector
  */
-export function ResultsPanel({ results, sv, cbits, showSv, setShowSv, chartData, nq, nc, isMobile, shotsExecuted, theme }) {
+export function ResultsPanel({ results, sv, cbits, showSv, setShowSv, chartData, nq, nc, isMobile, shotsExecuted, theme, isCollapsed, setIsCollapsed }) {
   if (!results) {
     return (
       <div style={{ fontSize: isMobile ? 12 : 13, color: theme.textLight, textAlign: "center", padding: 6 }}>
@@ -133,43 +134,74 @@ export function ResultsPanel({ results, sv, cbits, showSv, setShowSv, chartData,
       <div
         style={{
           display: "flex",
-          alignItems: "center",
+          alignItems: "flex-start",
           justifyContent: "space-between",
-          marginBottom: 8,
+          marginBottom: isCollapsed ? 0 : 8,
           flexWrap: "wrap",
           gap: 6,
+          rowGap: 8,
         }}
       >
-        <div>
-          <div style={{ fontSize: isMobile ? 14 : 16, fontWeight: 600, color: theme.text }}>
-            Probabilities <span style={{ color: theme.textLight, fontWeight: 400, fontSize: 12 }}>— 量測機率</span>
-          </div>
-          <div style={{ fontSize: 12, color: theme.textMid, marginTop: 2 }}>
-            (% of {shotsExecuted} shots)
-          </div>
+        <div style={{ display: "flex", alignItems: "flex-start", gap: 12, flexWrap: "wrap" }}>
+          <button
+            onClick={() => setIsCollapsed(!isCollapsed)}
+            style={{
+              padding: "6px 12px",
+              borderRadius: 5,
+              border: `1px solid ${theme.border}`,
+              background: isCollapsed ? theme.bg : theme.accentBg,
+              color: isCollapsed ? theme.textMid : theme.accent,
+              cursor: "pointer",
+              fontSize: isMobile ? 12 : 13,
+              fontWeight: 600,
+              fontFamily: "inherit",
+              display: "flex",
+              alignItems: "center",
+              gap: 6,
+            }}
+            aria-label={isCollapsed ? "Expand results" : "Collapse results"}
+          >
+            {isCollapsed ? "▸ Show" : "▾ Hide"} Results
+          </button>
+
+          {!isCollapsed && (
+            <div style={{ fontSize: isMobile ? 14 : 16, fontWeight: 600, color: theme.text, paddingTop: "6px" }}>
+              Probabilities <span style={{ color: theme.textLight, fontWeight: 400, fontSize: 12 }}>— 量測機率</span>
+            </div>
+          )}
         </div>
 
-        <button
-          onClick={() => setShowSv(!showSv)}
-          style={{
-            padding: "3px 10px",
-            borderRadius: 5,
-            border: `1px solid ${theme.border}`,
-            background: showSv ? theme.accentBg : theme.bg,
-            color: showSv ? theme.accent : theme.textMid,
-            cursor: "pointer",
-            fontSize: 10,
-            fontWeight: 500,
-            fontFamily: "inherit",
-          }}
-        >
-          {showSv ? "▾ Hide" : "▸ Show"} State
-        </button>
+        {!isCollapsed && (
+          <div style={{ fontSize: 11, color: theme.textMid, width: "100%", paddingLeft: 4 }}>
+            (% of {shotsExecuted} shots)
+          </div>
+        )}
       </div>
 
-      <ProbabilityChart chartData={chartData} nq={nq} isMobile={isMobile} shotsExecuted={shotsExecuted} theme={theme} />
-
-      {showSv && <StateVector sv={sv} nq={nq} isMobile={isMobile} theme={theme} />}
+      {!isCollapsed && (
+        <>
+          <ProbabilityChart chartData={chartData} nq={nq} isMobile={isMobile} shotsExecuted={shotsExecuted} theme={theme} />
+          <div style={{ marginTop: 8 }}>
+            <button
+              onClick={() => setShowSv(!showSv)}
+              style={{
+                padding: "3px 10px",
+                borderRadius: 5,
+                border: `1px solid ${theme.border}`,
+                background: showSv ? theme.accentBg : theme.bg,
+                color: showSv ? theme.accent : theme.textMid,
+                cursor: "pointer",
+                fontSize: 10,
+                fontWeight: 500,
+                fontFamily: "inherit",
+              }}
+            >
+              {showSv ? "▾ Hide" : "▸ Show"} States
+            </button>
+          </div>
+          {showSv && <StateVector sv={sv} nq={nq} isMobile={isMobile} theme={theme} />}
+        </>
+      )}
     </div>
   );
 }

@@ -184,6 +184,7 @@ export default function App() {
   const [showPalette, setShowPalette] = useState(false);
   const [nc, setNc] = useState(2); // Number of classical bits
   const [shotsInput, setShotsInput] = useState("1000");
+  const [isResultsCollapsed, setIsResultsCollapsed] = useState(false);
   const circuitRef = useRef(null);
 
   const circuitState = useCircuitState(nc);
@@ -224,6 +225,7 @@ export default function App() {
   const handleRun = () => {
     if (!isShotsValid) return;
     run(Number(shotsInput));
+    setIsResultsCollapsed(false);
   };
 
   const handleExportCircuit = async (format) => {
@@ -580,8 +582,9 @@ export default function App() {
               background: theme.surface,
               padding: isMobile ? "10px 12px" : "14px 24px",
               flexShrink: 0,
-              minHeight: results ? (isMobile ? 220 : 270) : 44,
+              minHeight: results ? (isResultsCollapsed ? 48 : (isMobile ? 220 : 270)) : 44,
               transition: "min-height 0.3s",
+              overflow: "hidden",
             }}
           >
             <ResultsPanel
@@ -596,6 +599,8 @@ export default function App() {
               isMobile={isMobile}
               shotsExecuted={shotsExecuted}
               theme={theme}
+              isCollapsed={isResultsCollapsed}
+              setIsCollapsed={setIsResultsCollapsed}
             />
           </div>
 
